@@ -15,7 +15,9 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
   using AudioProcessor::processBlock;
 
+  /** Create a GUI of the plugin when required. */
   juce::AudioProcessorEditor* createEditor() override;
+  /** We have a GUI of the plugin. Return true. */
   bool hasEditor() const override;
 
   const juce::String getName() const override;
@@ -25,6 +27,13 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   bool isMidiEffect() const override;
   double getTailLengthSeconds() const override;
 
+  /**
+   * Returns the number of preset programs the processor supports.
+   * NB: some hosts don't cope very well if you tell them there are 0 programs,
+   * so this should be at least 1, even if you're not really implementing
+   * programs.
+   * @return the number of preset programs the processor supports.
+   */
   int getNumPrograms() override;
   int getCurrentProgram() override;
   void setCurrentProgram(int index) override;

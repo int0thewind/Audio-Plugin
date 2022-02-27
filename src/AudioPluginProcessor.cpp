@@ -46,11 +46,7 @@ bool AudioPluginProcessor::isMidiEffect() const {
 
 double AudioPluginProcessor::getTailLengthSeconds() const { return 0.0; }
 
-int AudioPluginProcessor::getNumPrograms() {
-  return 1;  // NB: some hosts don't cope very well if you tell them there are 0
-             // programs, so this should be at least 1, even if you're not
-             // really implementing programs.
-}
+int AudioPluginProcessor::getNumPrograms() { return 1; }
 
 int AudioPluginProcessor::getCurrentProgram() { return 0; }
 
@@ -64,12 +60,12 @@ const juce::String AudioPluginProcessor::getProgramName(int index) {
 }
 
 void AudioPluginProcessor::changeProgramName(int index,
-                                                  const juce::String &newName) {
+                                             const juce::String &newName) {
   juce::ignoreUnused(index, newName);
 }
 
 void AudioPluginProcessor::prepareToPlay(double sampleRate,
-                                              int samplesPerBlock) {
+                                         int samplesPerBlock) {
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
   juce::ignoreUnused(sampleRate, samplesPerBlock);
@@ -105,12 +101,12 @@ bool AudioPluginProcessor::isBusesLayoutSupported(
 }
 
 void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
-                                             juce::MidiBuffer &midiMessages) {
+                                        juce::MidiBuffer &midiMessages) {
   juce::ignoreUnused(midiMessages);
 
   juce::ScopedNoDenormals noDenormals;
-  auto totalNumInputChannels = getTotalNumInputChannels();
-  auto totalNumOutputChannels = getTotalNumOutputChannels();
+  int totalNumInputChannels = this->getTotalNumInputChannels();
+  int totalNumOutputChannels = this->getTotalNumOutputChannels();
 
   // In case we have more outputs than inputs, this code clears any output
   // channels that didn't contain input data, (because these aren't
@@ -118,7 +114,7 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   // This is here to avoid people getting screaming feedback
   // when they first compile a plugin, but obviously you don't need to keep
   // this code if your algorithm always overwrites all the output channels.
-  for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+  for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     buffer.clear(i, 0, buffer.getNumSamples());
 
   // This is the place where you'd normally do the guts of your plugin's
@@ -128,22 +124,19 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   // Alternatively, you can process the samples with the channels
   // interleaved by keeping the same state.
   for (int channel = 0; channel < totalNumInputChannels; ++channel) {
-    auto *channelData = buffer.getWritePointer(channel);
+    float *channelData = buffer.getWritePointer(channel);
     juce::ignoreUnused(channelData);
     // ...do something to the data...
   }
 }
 
-bool AudioPluginProcessor::hasEditor() const {
-  return true;  // (change this to false if you choose to not supply an editor)
-}
+bool AudioPluginProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
   return new AudioPluginProcessorEditor(*this);
 }
 
-void AudioPluginProcessor::getStateInformation(
-    juce::MemoryBlock &destData) {
+void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
   // You should use this method to store your parameters in the memory block.
   // You could do that either as raw data, or use the XML or ValueTree classes
   // as intermediaries to make it easy to save and load complex data.
@@ -151,7 +144,7 @@ void AudioPluginProcessor::getStateInformation(
 }
 
 void AudioPluginProcessor::setStateInformation(const void *data,
-                                                    int sizeInBytes) {
+                                               int sizeInBytes) {
   // You should use this method to restore your parameters from this memory
   // block, whose contents will have been created by the getStateInformation()
   // call.
