@@ -31,6 +31,8 @@ target_link_libraries(Plugin
         juce::juce_recommended_warning_flags)
 
 add_subdirectory(tests)
+add_subdirectory(packages/googletest)
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 ################################
 # COPIED CONTENT FROM JUCE

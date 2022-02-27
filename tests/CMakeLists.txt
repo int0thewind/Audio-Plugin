@@ -1,7 +1,4 @@
 project(Tests)
 
-#add_subdirectory(googletest)
-#include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-
-# Testing Suite: Sample Unit Test
 add_executable(SampleUnitTests SampleUnitTests.cpp)
+target_link_libraries(SampleUnitTests gtest gtest_main)
