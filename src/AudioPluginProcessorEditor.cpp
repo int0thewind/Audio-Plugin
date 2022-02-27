@@ -1,15 +1,15 @@
-#include "PluginEditor.h"
+#include "AudioPluginProcessorEditor.h"
 
-#include "PluginProcessor.h"
+#include "AudioPluginProcessor.h"
 
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
-    AudioPluginAudioProcessor& p)
+AudioPluginProcessorEditor::AudioPluginProcessorEditor(
+    AudioPluginProcessor& p)
     : AudioProcessorEditor(&p), processorRef_(p) {
   juce::ignoreUnused(processorRef_);
   this->setSize(400, 300);
 }
 
-void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g) {
+void AudioPluginProcessorEditor::paint(juce::Graphics& g) {
   g.fillAll(
       getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 
@@ -19,4 +19,4 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g) {
                    juce::Justification::centred, 1);
 }
 
-void AudioPluginAudioProcessorEditor::resized() {}
+void AudioPluginProcessorEditor::resized() {}
