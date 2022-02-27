@@ -2,13 +2,11 @@
 
 #include "PluginProcessor.h"
 
-//==============================================================================
 class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor {
  public:
   explicit AudioPluginAudioProcessorEditor(AudioPluginAudioProcessor&);
-  ~AudioPluginAudioProcessorEditor() override;
+  ~AudioPluginAudioProcessorEditor() override = default;
 
-  //==============================================================================
   void paint(juce::Graphics&) override;
   void resized() override;
 
