@@ -17,6 +17,7 @@ class InfoDisplayBox : public juce::ListBox,
 
   void addMessage(const juce::String &message);
   void clearMessages();
+  juce::String getMessages();
 
  private:
   void handleAsyncUpdate() override;

@@ -83,12 +83,27 @@ void AudioPluginProcessorEditor::buttonClicked(juce::Button* button) {
   if (button == nullptr) {
     return;
   } else if (button == this->midiInfoExportBtn) {
-    // NOP
+    AudioPluginProcessorEditor::exportStringToFile(
+        this->midiInfoBox->getMessages());
   } else if (button == this->audioInfoExportBtn) {
-    // NOP
+    AudioPluginProcessorEditor::exportStringToFile(
+        this->audioInfoBox->getMessages());
   } else if (button == this->midiInfoClearBtn) {
-    // NOP
+    this->midiInfoBox->clearMessages();
   } else if (button == this->audioInfoClearBtn) {
-    // NOP
+    this->audioInfoBox->clearMessages();
   }
+}
+
+void AudioPluginProcessorEditor::exportStringToFile(
+    const juce::String& content) {
+  juce::FileChooser fileChooser = juce::FileChooser("Export");
+  using Flags = juce::FileBrowserComponent::FileChooserFlags;
+  int chooserFlags =
+      Flags::saveMode | Flags::warnAboutOverwriting | Flags::canSelectFiles;
+  auto callbackFunc = [content](const juce::FileChooser& fc) {
+    juce::File file = fc.getResult();
+    file.replaceWithText(content, true, true, "\n");
+  };
+  fileChooser.launchAsync(chooserFlags, callbackFunc);
 }

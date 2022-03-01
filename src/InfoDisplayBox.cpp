@@ -41,3 +41,7 @@ void InfoDisplayBox::clearMessages() {
   this->messages.clear();
   this->triggerAsyncUpdate();
 }
+
+juce::String InfoDisplayBox::getMessages() {
+  return messages.joinIntoString("\n");
+}
