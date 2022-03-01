@@ -37,13 +37,19 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
 
   int marginUnit = 4;
 
+  int btnHeight = 24;
+
   InfoDisplayBox* midiInfoBox;
 
   InfoDisplayBox* audioInfoBox;
 
   juce::TextButton* midiInfoExportBtn;
 
+  juce::TextButton* midiInfoClearBtn;
+
   juce::TextButton* audioInfoExportBtn;
+
+  juce::TextButton* audioInfoClearBtn;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessorEditor)
 };

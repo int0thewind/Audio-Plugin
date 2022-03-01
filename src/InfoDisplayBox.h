@@ -12,10 +12,11 @@ class InfoDisplayBox : public juce::ListBox,
                        private juce::AsyncUpdater {
  public:
   ~InfoDisplayBox() override;
-  InfoDisplayBox(const juce::String &componentName);
+  explicit InfoDisplayBox(const juce::String &componentName);
   inline int getNumRows() override;
 
   void addMessage(const juce::String &message);
+  void clearMessages();
 
  private:
   void handleAsyncUpdate() override;
