@@ -4,7 +4,8 @@
 #include "InfoDisplayBox.h"
 
 /** The GUI of the plugin. Can be considered as the front-end of the plugin. */
-class AudioPluginProcessorEditor : public juce::AudioProcessorEditor {
+class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
+                                   public juce::Button::Listener {
  public:
   /**
    * The constructor of the plugin GUI.
@@ -17,6 +18,8 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor {
 
   void paint(juce::Graphics&) override;
   void resized() override;
+
+  void buttonClicked(juce::Button* button) override;
 
  private:
   /**
@@ -32,9 +35,15 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor {
 
   int height = 400;
 
+  int marginUnit = 4;
+
   InfoDisplayBox* midiInfoBox;
 
   InfoDisplayBox* audioInfoBox;
+
+  juce::TextButton* midiInfoExportBtn;
+
+  juce::TextButton* audioInfoExportBtn;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessorEditor)
 };
