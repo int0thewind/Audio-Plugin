@@ -14,7 +14,8 @@ juce_add_plugin(Plugin
 target_sources(Plugin
         PRIVATE
         src/AudioPluginProcessorEditor.cpp
-        src/AudioPluginProcessor.cpp)
+        src/AudioPluginProcessor.cpp
+        src/InfoDisplayBox.cpp)
 
 target_compile_definitions(Plugin
         PUBLIC
