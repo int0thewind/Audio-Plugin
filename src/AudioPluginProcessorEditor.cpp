@@ -4,8 +4,11 @@
 
 AudioPluginProcessorEditor::AudioPluginProcessorEditor(AudioPluginProcessor& p)
     : AudioProcessorEditor(&p), processorRef_(p) {
-  juce::ignoreUnused(processorRef_);
-  this->setSize(400, 300);
+  this->setSize(600, 400);
+  this->setResizable(false, false);
+
+  this->midiInfoBox = new InfoDisplayBox("Midi Info Box");
+  this->audioInfoBox = new InfoDisplayBox("Audio Info Box");
 }
 
 void AudioPluginProcessorEditor::paint(juce::Graphics& g) {
@@ -13,3 +16,7 @@ void AudioPluginProcessorEditor::paint(juce::Graphics& g) {
 }
 
 void AudioPluginProcessorEditor::resized() {}
+AudioPluginProcessorEditor::~AudioPluginProcessorEditor() {
+  delete this->midiInfoBox;
+  delete this->audioInfoBox;
+}
