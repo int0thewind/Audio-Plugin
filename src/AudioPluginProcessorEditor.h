@@ -51,7 +51,7 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
 
   juce::TextButton* audioInfoClearBtn;
 
-  static void exportStringToFile(const juce::String& content);
+  void exportStringToFile(const juce::String& content);
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessorEditor)
 };

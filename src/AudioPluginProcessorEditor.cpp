@@ -76,18 +76,16 @@ AudioPluginProcessorEditor::~AudioPluginProcessorEditor() {
   delete this->midiInfoExportBtn;
   delete this->midiInfoClearBtn;
   delete this->audioInfoExportBtn;
-  delete this->audioInfoExportBtn;
+  delete this->audioInfoClearBtn;
 }
 
 void AudioPluginProcessorEditor::buttonClicked(juce::Button* button) {
   if (button == nullptr) {
     return;
   } else if (button == this->midiInfoExportBtn) {
-    AudioPluginProcessorEditor::exportStringToFile(
-        this->midiInfoBox->getMessages());
+    this->exportStringToFile(this->midiInfoBox->getMessages());
   } else if (button == this->audioInfoExportBtn) {
-    AudioPluginProcessorEditor::exportStringToFile(
-        this->audioInfoBox->getMessages());
+    this->exportStringToFile(this->audioInfoBox->getMessages());
   } else if (button == this->midiInfoClearBtn) {
     this->midiInfoBox->clearMessages();
   } else if (button == this->audioInfoClearBtn) {
@@ -97,13 +95,14 @@ void AudioPluginProcessorEditor::buttonClicked(juce::Button* button) {
 
 void AudioPluginProcessorEditor::exportStringToFile(
     const juce::String& content) {
-  juce::FileChooser fileChooser = juce::FileChooser("Export");
+  auto fileChooser = std::make_unique<juce::FileChooser>("Export");
   using Flags = juce::FileBrowserComponent::FileChooserFlags;
   int chooserFlags =
       Flags::saveMode | Flags::warnAboutOverwriting | Flags::canSelectFiles;
-  auto callbackFunc = [content](const juce::FileChooser& fc) {
-    juce::File file = fc.getResult();
-    file.replaceWithText(content, true, true, "\n");
-  };
-  fileChooser.launchAsync(chooserFlags, callbackFunc);
+  fileChooser->launchAsync(chooserFlags,
+                           [content](const juce::FileChooser& fc) {
+                             DBG("Callback function called.");
+                             juce::File file = fc.getResult();
+                             file.replaceWithText(content);
+                           });
 }
