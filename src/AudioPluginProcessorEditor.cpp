@@ -106,3 +106,8 @@ void AudioPluginProcessorEditor::exportStringToFile(
                              file.replaceWithText(content);
                            });
 }
+
+void AudioPluginProcessorEditor::pushMessageToMidiInfoBox(
+    const juce::String& message) {
+  this->midiInfoBox->addMessage(message);
+}

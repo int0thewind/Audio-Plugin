@@ -9,7 +9,7 @@ juce_add_plugin(Plugin
         PLUGIN_MANUFACTURER_CODE Juce
         PLUGIN_CODE Dem0
         FORMATS AU VST3 Standalone
-        PRODUCT_NAME "Audio Plugin Example")
+        PRODUCT_NAME "Plugin")
 
 target_sources(Plugin
         PRIVATE

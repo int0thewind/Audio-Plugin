@@ -102,7 +102,9 @@ bool AudioPluginProcessor::isBusesLayoutSupported(
 
 void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                         juce::MidiBuffer &midiMessages) {
-  juce::ignoreUnused(midiMessages);
+  for (juce::MidiMessageMetadata midiMessageMetadata : midiMessages) {
+    this->pushMidiMessage(midiMessageMetadata.getMessage().getDescription());
+  }
 
   juce::ScopedNoDenormals noDenormals;
   int totalNumInputChannels = this->getTotalNumInputChannels();
@@ -149,6 +151,20 @@ void AudioPluginProcessor::setStateInformation(const void *data,
   // block, whose contents will have been created by the getStateInformation()
   // call.
   juce::ignoreUnused(data, sizeInBytes);
+}
+
+void AudioPluginProcessor::pushMidiMessage(const juce::String &message) {
+  if (message.length() == 0) return;
+  if (!this->hasEditor()) return;
+  AudioPluginProcessorEditor *editor;
+  try {
+    editor =
+        dynamic_cast<AudioPluginProcessorEditor *>(this->getActiveEditor());
+  } catch (std::bad_cast &e) {
+    return;
+  }
+  if (editor == nullptr) return;
+  editor->pushMessageToMidiInfoBox(message);
 }
 
 // TODO: possible to extract this function out?

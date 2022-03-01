@@ -21,6 +21,8 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
 
   void buttonClicked(juce::Button* button) override;
 
+  void pushMessageToMidiInfoBox(const juce::String& message);
+
  private:
   /**
    * A reference of the plugin processor the GUI is managing.
