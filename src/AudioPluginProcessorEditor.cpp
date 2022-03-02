@@ -3,24 +3,12 @@
 #include "AudioPluginProcessor.h"
 
 AudioPluginProcessorEditor::AudioPluginProcessorEditor(AudioPluginProcessor& p)
-    : AudioProcessorEditor(&p), processorRef_(p) {
-  this->midiInfoExportBtn = new juce::TextButton("MIDI Info Export Button");
-  this->midiInfoExportBtn->setVisible(true);
-  this->midiInfoExportBtn->setButtonText("Export MIDI Info");
-  this->midiInfoExportBtn->addListener(this);
-  this->addChildComponent(*midiInfoExportBtn);
-
+    : AudioProcessorEditor(&p) {
   this->midiInfoClearBtn = new juce::TextButton("MIDI Info Clear Button");
   this->midiInfoClearBtn->setVisible(true);
   this->midiInfoClearBtn->setButtonText("Clear MIDI Info");
   this->midiInfoClearBtn->addListener(this);
   this->addChildComponent(*midiInfoClearBtn);
-
-  this->audioInfoExportBtn = new juce::TextButton("Audio Info Export Button");
-  this->audioInfoExportBtn->setVisible(true);
-  this->audioInfoExportBtn->setButtonText("Export Audio Info");
-  this->audioInfoExportBtn->addListener(this);
-  this->addChildComponent(*audioInfoExportBtn);
 
   this->audioInfoClearBtn = new juce::TextButton("Audio Info Clear Button");
   this->audioInfoClearBtn->setVisible(true);
@@ -54,17 +42,11 @@ void AudioPluginProcessorEditor::resized() {
   bound.removeFromRight(this->marginUnit);
 
   juce::Rectangle<int> midiBound = bound.removeFromLeft(infoDisplayBoxWidth);
-  this->midiInfoExportBtn->setBounds(
-      midiBound.removeFromBottom(this->btnHeight));
-  midiBound.removeFromBottom(this->marginUnit);
   this->midiInfoClearBtn->setBounds(
       midiBound.removeFromBottom(this->btnHeight));
   this->midiInfoBox->setBounds(midiBound);
 
   juce::Rectangle<int> audioBound = bound.removeFromRight(infoDisplayBoxWidth);
-  this->audioInfoExportBtn->setBounds(
-      audioBound.removeFromBottom(this->btnHeight));
-  audioBound.removeFromBottom(this->marginUnit);
   this->audioInfoClearBtn->setBounds(
       audioBound.removeFromBottom(this->btnHeight));
   this->audioInfoBox->setBounds(audioBound);
@@ -73,38 +55,17 @@ void AudioPluginProcessorEditor::resized() {
 AudioPluginProcessorEditor::~AudioPluginProcessorEditor() {
   delete this->midiInfoBox;
   delete this->audioInfoBox;
-  delete this->midiInfoExportBtn;
   delete this->midiInfoClearBtn;
-  delete this->audioInfoExportBtn;
   delete this->audioInfoClearBtn;
 }
 
 void AudioPluginProcessorEditor::buttonClicked(juce::Button* button) {
-  if (button == nullptr) {
+  if (button == nullptr)
     return;
-  } else if (button == this->midiInfoExportBtn) {
-    this->exportStringToFile(this->midiInfoBox->getMessages());
-  } else if (button == this->audioInfoExportBtn) {
-    this->exportStringToFile(this->audioInfoBox->getMessages());
-  } else if (button == this->midiInfoClearBtn) {
+  else if (button == this->midiInfoClearBtn)
     this->midiInfoBox->clearMessages();
-  } else if (button == this->audioInfoClearBtn) {
+  else if (button == this->audioInfoClearBtn)
     this->audioInfoBox->clearMessages();
-  }
-}
-
-void AudioPluginProcessorEditor::exportStringToFile(
-    const juce::String& content) {
-  auto fileChooser = std::make_unique<juce::FileChooser>("Export");
-  using Flags = juce::FileBrowserComponent::FileChooserFlags;
-  int chooserFlags =
-      Flags::saveMode | Flags::warnAboutOverwriting | Flags::canSelectFiles;
-  fileChooser->launchAsync(chooserFlags,
-                           [content](const juce::FileChooser& fc) {
-                             DBG("Callback function called.");
-                             juce::File file = fc.getResult();
-                             file.replaceWithText(content);
-                           });
 }
 
 void AudioPluginProcessorEditor::pushMessageToMidiInfoBox(

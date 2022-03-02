@@ -24,13 +24,6 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
   void pushMessageToMidiInfoBox(const juce::String& message);
 
  private:
-  /**
-   * A reference of the plugin processor the GUI is managing.
-   * This reference is provided as a quick way for your editor to access the
-   * processor object that created it.
-   */
-  AudioPluginProcessor& processorRef_;
-
   juce::Colour backgroundColour{0xff323e44};
 
   int width = 600;
@@ -45,15 +38,9 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
 
   InfoDisplayBox* audioInfoBox;
 
-  juce::TextButton* midiInfoExportBtn;
-
   juce::TextButton* midiInfoClearBtn;
 
-  juce::TextButton* audioInfoExportBtn;
-
   juce::TextButton* audioInfoClearBtn;
-
-  void exportStringToFile(const juce::String& content);
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessorEditor)
 };
