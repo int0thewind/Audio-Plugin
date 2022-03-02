@@ -12,6 +12,8 @@ juce_add_plugin(Plugin
         PRODUCT_NAME "Plugin")
 
 target_sources(Plugin
+        PUBLIC
+        main.cpp
         PRIVATE
         src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp

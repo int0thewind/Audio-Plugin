@@ -166,8 +166,3 @@ void AudioPluginProcessor::pushMidiMessage(const juce::String &message) {
   if (editor == nullptr) return;
   editor->pushMessageToMidiInfoBox(message);
 }
-
-// TODO: possible to extract this function out?
-juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
-  return new AudioPluginProcessor();
-}
