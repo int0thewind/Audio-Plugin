@@ -1,28 +1,28 @@
 cmake_minimum_required(VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
 
-project(Plugin VERSION 0.0.1)
+project(Soft-Velvet VERSION 0.0.1)
 
 add_subdirectory(packages/JUCE)
 
-juce_add_plugin(Plugin
+juce_add_plugin(Soft-Velvet
         PLUGIN_MANUFACTURER_CODE Juce
         PLUGIN_CODE Dem0
         FORMATS AU VST3 Standalone
         PRODUCT_NAME "Audio Plugin Example")
 
-target_sources(Plugin
+target_sources(Soft-Velvet
         PRIVATE
         src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp)
 
-target_compile_definitions(Plugin
+target_compile_definitions(Soft-Velvet
         PUBLIC
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_link_libraries(Plugin
+target_link_libraries(Soft-Velvet
         PRIVATE
         juce::juce_audio_utils
         PUBLIC
