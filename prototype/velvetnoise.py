@@ -1,3 +1,5 @@
+from numbers import Real
+
 import numpy as np
 import numpy.typing as npt
 
@@ -19,8 +21,8 @@ def _make_decaying_sample(size: int, alpha: float) -> npt.NDArray[np.float32]:
     )
 
 
-def velvet_noise(sample_rate: int,
-                 filter_length_ms: float,
+def velvet_noise(sample_rate: Real,
+                 filter_length_ms: Real,
                  number_of_impulses: int,
                  target_decay: float) -> npt.NDArray[np.float32]:
     """
@@ -35,9 +37,9 @@ def velvet_noise(sample_rate: int,
 
     # Parameter value and type check
     if sample_rate <= 0:
-        raise ValueError(f'The sample rate should be a positive integer. Got {sample_rate}')
+        raise ValueError(f'The sample rate should be a positive real number. Got {sample_rate}')
     if filter_length_ms <= 0:
-        raise ValueError(f'The filter length should be a positive float. Got {filter_length_ms}')
+        raise ValueError(f'The filter length should be a positive real number. Got {filter_length_ms}')
     if number_of_impulses <= 0:
         raise ValueError(f'The total number of impulses cannot be non-positive. Got {number_of_impulses}')
     if target_decay > 0:
