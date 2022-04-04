@@ -12,9 +12,12 @@ juce_add_plugin(Soft-Velvet
         PRODUCT_NAME "Audio Plugin Example")
 
 target_sources(Soft-Velvet
+        PUBLIC
+        main.cpp
         PRIVATE
         src/AudioPluginProcessorEditor.cpp
-        src/AudioPluginProcessor.cpp)
+        src/AudioPluginProcessor.cpp
+        src/InfoDisplayBox.cpp)
 
 target_compile_definitions(Soft-Velvet
         PUBLIC
