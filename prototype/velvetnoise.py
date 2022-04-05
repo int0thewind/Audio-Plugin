@@ -33,7 +33,7 @@ def _make_decaying_sample(size: int, alpha: float) -> npt.NDArray[np.float32]:
 def velvet_noise(sample_rate: Real,
                  filter_length_ms: Real,
                  number_of_impulses: int,
-                 target_decay: float) -> npt.NDArray[np.float32]:
+                 target_decay: Real) -> npt.NDArray[np.float32]:
     """
     Create a velvet noise discrete-time signal.
 
