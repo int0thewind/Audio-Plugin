@@ -14,7 +14,7 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
   explicit AudioPluginProcessorEditor(AudioPluginProcessor&);
 
   /** The default destructor of the GUI. */
-  ~AudioPluginProcessorEditor() override;
+  ~AudioPluginProcessorEditor() override = default;
 
   void paint(juce::Graphics&) override;
   void resized() override;
@@ -34,13 +34,13 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
 
   int btnHeight = 24;
 
-  InfoDisplayBox* midiInfoBox;
+  std::unique_ptr<InfoDisplayBox> midiInfoBox;
 
-  InfoDisplayBox* audioInfoBox;
+  std::unique_ptr<InfoDisplayBox> audioInfoBox;
 
-  juce::TextButton* midiInfoClearBtn;
+  std::unique_ptr<juce::TextButton> midiInfoClearBtn;
 
-  juce::TextButton* audioInfoClearBtn;
+  std::unique_ptr<juce::TextButton> audioInfoClearBtn;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessorEditor)
 };

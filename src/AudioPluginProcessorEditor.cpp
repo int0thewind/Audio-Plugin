@@ -4,23 +4,25 @@
 
 AudioPluginProcessorEditor::AudioPluginProcessorEditor(AudioPluginProcessor& p)
     : AudioProcessorEditor(&p) {
-  this->midiInfoClearBtn = new juce::TextButton("MIDI Info Clear Button");
+  this->midiInfoClearBtn =
+      std::make_unique<juce::TextButton>("MIDI Info Clear Button");
   this->midiInfoClearBtn->setVisible(true);
   this->midiInfoClearBtn->setButtonText("Clear MIDI Info");
   this->midiInfoClearBtn->addListener(this);
   this->addChildComponent(*midiInfoClearBtn);
 
-  this->audioInfoClearBtn = new juce::TextButton("Audio Info Clear Button");
+  this->audioInfoClearBtn =
+      std::make_unique<juce::TextButton>("Audio Info Clear Button");
   this->audioInfoClearBtn->setVisible(true);
   this->audioInfoClearBtn->setButtonText("Clear Audio Info");
   this->audioInfoClearBtn->addListener(this);
   this->addChildComponent(*audioInfoClearBtn);
 
-  this->midiInfoBox = new InfoDisplayBox("Midi Info Box");
+  this->midiInfoBox = std::make_unique<InfoDisplayBox>("Midi Info Box");
   this->midiInfoBox->setVisible(true);
   this->addChildComponent(*midiInfoBox);
 
-  this->audioInfoBox = new InfoDisplayBox("Audio Info Box");
+  this->audioInfoBox = std::make_unique<InfoDisplayBox>("Audio Info Box");
   this->audioInfoBox->setVisible(true);
   this->addChildComponent(*audioInfoBox);
 
@@ -52,19 +54,12 @@ void AudioPluginProcessorEditor::resized() {
   this->audioInfoBox->setBounds(audioBound);
 }
 
-AudioPluginProcessorEditor::~AudioPluginProcessorEditor() {
-  delete this->midiInfoBox;
-  delete this->audioInfoBox;
-  delete this->midiInfoClearBtn;
-  delete this->audioInfoClearBtn;
-}
-
 void AudioPluginProcessorEditor::buttonClicked(juce::Button* button) {
   if (button == nullptr)
     return;
-  else if (button == this->midiInfoClearBtn)
+  else if (button == this->midiInfoClearBtn.get())
     this->midiInfoBox->clearMessages();
-  else if (button == this->audioInfoClearBtn)
+  else if (button == this->audioInfoClearBtn.get())
     this->audioInfoBox->clearMessages();
 }
 
