@@ -22,4 +22,7 @@ def plot_freqz(w, h):
 
 
 def no_output(*args):
+    """
+    Helper function to coerce no output in jupyter notebook environment
+    """
     pass

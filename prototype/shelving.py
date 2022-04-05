@@ -1,5 +1,4 @@
 # https://www.dsprelated.com/showcode/170.php
-
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
