@@ -26,9 +26,9 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
  private:
   juce::Colour backgroundColour{0xff323e44};
 
-  int width = 600;
+  int width = 800;
 
-  int height = 400;
+  int height = 600;
 
   int marginUnit = 4;
 
