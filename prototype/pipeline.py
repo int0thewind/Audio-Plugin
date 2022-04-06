@@ -1,4 +1,3 @@
-import numpy as np
 import numpy.typing as npt
 from shelving import Class_IIR_Shelving
 from velvetnoise import velvet_noise
@@ -14,5 +13,6 @@ def pipeline(data: npt.NDArray, sr, fc, G, Q, Ls, M, LdB, gain) -> npt.NDArray:
 
     data_vn *= gain
 
-    return data_vn.astype(data.dtype) + data
-
+    return ((data_vn.astype(data.dtype) + data) / (1 + gain)).astype(
+        data.dtype
+    )
