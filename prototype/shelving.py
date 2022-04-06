@@ -1,6 +1,7 @@
 # https://www.dsprelated.com/showcode/170.php
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 from scipy import signal
 
 
