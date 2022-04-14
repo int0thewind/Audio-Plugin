@@ -15,7 +15,7 @@ class InfoDisplayBox : public juce::ListBox,
   explicit InfoDisplayBox(const juce::String &componentName);
   inline int getNumRows() override;
 
-  void addMessage(const juce::String &message);
+  void addMessage(juce::StringRef message);
   void clearMessages();
   juce::String getMessages();
 

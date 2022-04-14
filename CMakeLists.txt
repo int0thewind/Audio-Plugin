@@ -17,7 +17,7 @@ target_sources(Soft-Velvet
         PRIVATE
         src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp
-        src/InfoDisplayBox.cpp)
+        src/components/InfoDisplayBox.cpp)
 
 target_compile_definitions(Soft-Velvet
         PUBLIC
