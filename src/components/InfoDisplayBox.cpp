@@ -32,7 +32,7 @@ void InfoDisplayBox::paintListBoxItem(int rowNumber, juce::Graphics &g,
              juce::Justification::centredLeft);
 }
 
-void InfoDisplayBox::addMessage(const juce::String &message) {
+void InfoDisplayBox::addMessage(juce::StringRef message) {
   this->messages.add(juce::String(message));
   this->triggerAsyncUpdate();
 }

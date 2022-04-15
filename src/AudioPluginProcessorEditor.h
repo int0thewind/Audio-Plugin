@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AudioPluginProcessor.h"
-#include "InfoDisplayBox.h"
+#include "components/InfoDisplayBox.h"
 
 /** The GUI of the plugin. Can be considered as the front-end of the plugin. */
 class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
@@ -14,33 +14,23 @@ class AudioPluginProcessorEditor : public juce::AudioProcessorEditor,
   explicit AudioPluginProcessorEditor(AudioPluginProcessor&);
 
   /** The default destructor of the GUI. */
-  ~AudioPluginProcessorEditor() override;
+  ~AudioPluginProcessorEditor() override = default;
 
   void paint(juce::Graphics&) override;
   void resized() override;
 
   void buttonClicked(juce::Button* button) override;
 
-  void pushMessageToMidiInfoBox(const juce::String& message);
-
  private:
   juce::Colour backgroundColour{0xff323e44};
 
-  int width = 600;
+  uint16_t width = 800;
 
-  int height = 400;
+  uint16_t height = 600;
 
-  int marginUnit = 4;
+  uint8_t marginUnit = 4;
 
-  int btnHeight = 24;
-
-  InfoDisplayBox* midiInfoBox;
-
-  InfoDisplayBox* audioInfoBox;
-
-  juce::TextButton* midiInfoClearBtn;
-
-  juce::TextButton* audioInfoClearBtn;
+  uint8_t btnHeight = 24;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessorEditor)
 };

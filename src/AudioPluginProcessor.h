@@ -44,6 +44,5 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   void setStateInformation(const void* data, int sizeInBytes) override;
 
  private:
-  void pushMidiMessage(const juce::String& message);
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessor)
 };
