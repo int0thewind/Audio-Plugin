@@ -1,37 +1,71 @@
 cmake_minimum_required(VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
 
-project(Soft-Velvet VERSION 0.0.1)
+project(
+    SoftVelvet
+    VERSION 0.1.0
+)
 
 add_subdirectory(packages/JUCE)
 
-juce_add_plugin(Soft-Velvet
-        PLUGIN_MANUFACTURER_CODE Juce
-        PLUGIN_CODE Dem0
-        FORMATS AU VST3 Standalone
-        PRODUCT_NAME "Audio Plugin Example")
+juce_add_plugin(
+    ${PROJECT_NAME}
 
-target_sources(Soft-Velvet
-        PUBLIC
+    FORMATS AU
+
+    PLUGIN_MANUFACTURER_CODE Juce
+    PLUGIN_CODE Dem0
+
+    IS_SYNTH FALSE
+    NEEDS_MIDI_INPUT TRUE
+    NEEDS_MIDI_OUTPUT FALSE
+    IS_MIDI_EFFECT FALSE
+
+    COPY_PLUGIN_AFTER_BUILD TRUE
+    VST3_COPY_DIR $ENV{HOME}/Library/Audio/Plug-Ins/VST
+    AU_COPY_DIR $ENV{HOME}/Library/Audio/Plug-Ins/Components
+
+    VST3_CATEGORIES Filter
+    AU_MAIN_TYPE kAudioUnitType_Effect
+)
+
+juce_enable_copy_plugin_step(${PROJECT_NAME})
+
+target_sources(
+    ${PROJECT_NAME}
+
+    PUBLIC
         main.cpp
-        PRIVATE
+    PRIVATE
         src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp
-        src/components/InfoDisplayBox.cpp)
+        src/components/InfoDisplayBox.cpp
+)
 
-target_compile_definitions(Soft-Velvet
-        PUBLIC
+target_compile_definitions(
+    ${PROJECT_NAME}
+
+    PUBLIC
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
-        JUCE_VST3_CAN_REPLACE_VST2=0)
+        JUCE_VST3_CAN_REPLACE_VST2=0
+)
 
-target_link_libraries(Soft-Velvet
-        PRIVATE
+target_link_libraries(
+    ${PROJECT_NAME}
+
+    PRIVATE
+        juce::juce_core
+        juce::juce_events
+        juce::juce_audio_basics
+        juce::juce_audio_processors
         juce::juce_audio_utils
-        PUBLIC
+        juce::juce_dsp
+    PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
-        juce::juce_recommended_warning_flags)
+        juce::juce_recommended_warning_flags
+)
 
 add_subdirectory(tests)
 add_subdirectory(packages/googletest)
