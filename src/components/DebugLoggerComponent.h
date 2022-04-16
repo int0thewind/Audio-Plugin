@@ -26,7 +26,12 @@ inline static void dlog(juce::StringRef msg) {
 
 #if DEBUG
 
-/** Application-wide logger that receives log message and displays it. */
+/**
+ * Application-wide logger that receives log message and displays it.
+ * You should never create more than one one instance of this class!
+ * This class constructor automatically register itself as the application-wide
+ * logger, and only one logger is permitted for an application.
+ */
 class DebugLoggerComponent final : public juce::TextEditor,
                                    private juce::Logger {
  public:
