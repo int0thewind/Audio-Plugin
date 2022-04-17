@@ -9,19 +9,19 @@ project(
 add_subdirectory(packages/JUCE)
 
 juce_add_plugin(
-    ${PROJECT_NAME}
+        ${PROJECT_NAME}
 
-    FORMATS AU
+        FORMATS AU Standalone
 
-    PLUGIN_MANUFACTURER_CODE Juce
-    PLUGIN_CODE Dem0
+        PLUGIN_MANUFACTURER_CODE Juce
+        PLUGIN_CODE Dem0
 
-    IS_SYNTH FALSE
-    NEEDS_MIDI_INPUT TRUE
-    NEEDS_MIDI_OUTPUT FALSE
-    IS_MIDI_EFFECT FALSE
+        IS_SYNTH FALSE
+        NEEDS_MIDI_INPUT TRUE
+        NEEDS_MIDI_OUTPUT FALSE
+        IS_MIDI_EFFECT FALSE
 
-    COPY_PLUGIN_AFTER_BUILD TRUE
+        COPY_PLUGIN_AFTER_BUILD TRUE
     VST3_COPY_DIR $ENV{HOME}/Library/Audio/Plug-Ins/VST
     AU_COPY_DIR $ENV{HOME}/Library/Audio/Plug-Ins/Components
 
@@ -39,7 +39,7 @@ target_sources(
     PRIVATE
         src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp
-        src/components/InfoDisplayBox.cpp
+        src/components/DebugLoggerComponent.cpp
 )
 
 target_compile_definitions(
