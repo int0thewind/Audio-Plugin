@@ -16,7 +16,7 @@ AudioPluginProcessorEditor::AudioPluginProcessorEditor(AudioPluginProcessor& p)
 #else
       this->width + this->marginUnit * 2;
 #endif
-  this->setSize(realWidth, this->height);
+  this->setSize(realWidth, this->height + this->marginUnit * 2);
   this->setResizable(false, false);
 }
 
