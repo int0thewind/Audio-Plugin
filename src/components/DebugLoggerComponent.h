@@ -17,7 +17,7 @@ inline static void dlog(juce::StringRef msg) {
 #if DEBUG
   juce::String s{};
   s << '[' << juce::Time::getCurrentTime().toString(true, true, true, true)
-    << "] " << msg << '\n';
+    << "] " << msg;
   juce::Logger::writeToLog(s);
 #else
   juce::ignoreUnused(msg);
