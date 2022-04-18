@@ -12,6 +12,11 @@ AudioPluginProcessor::AudioPluginProcessor()
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
       ) {
+  juce::Logger::setCurrentLogger(this->logger.get());
+}
+
+AudioPluginProcessor::~AudioPluginProcessor() {
+  juce::Logger::setCurrentLogger(nullptr);
 }
 
 const juce::String AudioPluginProcessor::getName() const {
