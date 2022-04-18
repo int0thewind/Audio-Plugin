@@ -12,10 +12,12 @@ AudioPluginProcessor::AudioPluginProcessor()
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
       ) {
+  // Register the logger to the application
   juce::Logger::setCurrentLogger(this->logger.get());
 }
 
 AudioPluginProcessor::~AudioPluginProcessor() {
+  // Deregister the application-wide logger before quitting the plugin.
   juce::Logger::setCurrentLogger(nullptr);
 }
 
