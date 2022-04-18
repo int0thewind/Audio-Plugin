@@ -14,8 +14,6 @@ AudioPluginProcessor::AudioPluginProcessor()
       ) {
 }
 
-AudioPluginProcessor::~AudioPluginProcessor() = default;
-
 const juce::String AudioPluginProcessor::getName() const {
   return JucePlugin_Name;
 }
@@ -135,16 +133,22 @@ juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
 }
 
 void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
-  // You should use this method to store your parameters in the memory block.
-  // You could do that either as raw data, or use the XML or ValueTree classes
-  // as intermediaries to make it easy to save and load complex data.
-  juce::ignoreUnused(destData);
+  std::unique_ptr<juce::XmlElement> xmlState =
+      // use the plugin name as the tag name
+      std::make_unique<juce::XmlElement>(this->getName());
+  // TODO: pass audio parameters to the XML element
+  AudioPluginProcessor::copyXmlToBinary(*xmlState, destData);
 }
 
 void AudioPluginProcessor::setStateInformation(const void *data,
                                                int sizeInBytes) {
-  // You should use this method to restore your parameters from this memory
-  // block, whose contents will have been created by the getStateInformation()
-  // call.
-  juce::ignoreUnused(data, sizeInBytes);
+  std::unique_ptr<juce::XmlElement> xmlState =
+      AudioPluginProcessor::getXmlFromBinary(data, sizeInBytes);
+
+  if (xmlState != nullptr) {  // initial data block may have no data
+    // sanity check: if the data does not belong to our plugin
+    if (xmlState->hasTagName(this->getName())) {
+      // TODO: restore audio parameters from the XML element
+    }
+  }
 }

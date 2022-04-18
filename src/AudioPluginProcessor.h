@@ -5,7 +5,7 @@
 class AudioPluginProcessor : public juce::AudioProcessor {
  public:
   AudioPluginProcessor();
-  ~AudioPluginProcessor() override;
+  ~AudioPluginProcessor() override = default;
 
   void prepareToPlay(double sampleRate, int samplesPerBlock) override;
   void releaseResources() override;
