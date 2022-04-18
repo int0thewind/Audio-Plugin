@@ -66,8 +66,8 @@ class AudioPluginProcessor : public juce::AudioProcessor {
    * A application-wide file logger.
    * In a release build, it would be a null pointer. No log recorded.
    * On macOS, the log file would be in `~/Library/Logs/SoftVelvet/`
-   * On Windows, it would be in `C:\Documents and Settings\username\Application
-   * Data\SoftVelvet`
+   * On Windows, it would be in `C:\\Documents and
+   * Settings\\username\\Application Data\\SoftVelvet`
    * @see dlog
    */
   std::unique_ptr<juce::FileLogger> logger {
