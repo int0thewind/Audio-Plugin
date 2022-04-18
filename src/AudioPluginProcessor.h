@@ -2,6 +2,24 @@
 
 #include "juce_audio_processors/juce_audio_processors.h"
 
+/**
+ * A global function to push log message to the logger.
+ * In a production build, this function would do nothing. No logs are recorded.
+ * Must call this function instead of invoking `juce::Logger::writeToLog()`
+ * to reduce unnecessary operations in a release build.
+ * @param msg log message to log.
+ */
+inline static void dlog(juce::StringRef msg) {
+#if DEBUG
+  juce::String s{};
+  s << '[' << juce::Time::getCurrentTime().toString(true, true, true, true)
+    << "] " << msg;
+  juce::Logger::writeToLog(s);
+#else
+  juce::ignoreUnused(msg);
+#endif
+}
+
 class AudioPluginProcessor : public juce::AudioProcessor {
  public:
   AudioPluginProcessor();
@@ -44,5 +62,23 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   void setStateInformation(const void* data, int sizeInBytes) override;
 
  private:
+  /**
+   * A application-wide file logger.
+   * In a release build, it would be a null pointer. No log recorded.
+   * On macOS, the log file would be in `~/Library/Logs/SoftVelvet/`
+   * On Windows, it would be in `C:\\Documents and
+   * Settings\\username\\Application Data\\SoftVelvet`
+   * @see dlog
+   */
+  std::unique_ptr<juce::FileLogger> logger {
+#if DEBUG
+    juce::FileLogger::createDateStampedLogger(
+        this->getName(), "runtime-log", ".log",
+        "New Instance of SoftVelvet Audio Plugin Initialised")
+#else
+    nullptr
+#endif
+  };
+
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessor)
 };

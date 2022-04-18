@@ -39,7 +39,6 @@ target_sources(
     PRIVATE
         src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp
-        src/components/DebugLoggerComponent.cpp
 )
 
 target_compile_definitions(
