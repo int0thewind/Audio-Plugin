@@ -14,30 +14,14 @@ void VelvetNoiseFilter::releaseResources() {}
 void VelvetNoiseFilter::processBlock(juce::AudioBuffer<float>& buffer,
                                      juce::MidiBuffer& midiMessages) {}
 
-VelvetNoiseFilter::VelvetNoiseFilter(int _numberOfImpulses,
-                                     int _filterLengthInMillisecond,
+VelvetNoiseFilter::VelvetNoiseFilter(unsigned int _numberOfImpulses,
+                                     unsigned int _filterLengthInMillisecond,
                                      float _targetDecayDecibel)
-    : numberOfImpulses(_numberOfImpulses),
+    : BaseAudioProcessor(),
+      numberOfImpulses(_numberOfImpulses),
       filterLengthInMillisecond(_filterLengthInMillisecond),
       targetDecayDecibel(_targetDecayDecibel) {
   vnflog("Instance created");
-}
-
-VelvetNoiseFilter::~VelvetNoiseFilter() {
-  vnflog("Instance is about to destruct.");
-  this->releaseResources();
-}
-
-juce::Array<float> VelvetNoiseFilter::makeDecayingSample(size_t size,
-                                                         float alpha) {
-  juce::Random rnd;
-  juce::Array<float> samples;
-  samples.resize(static_cast<int>(size));
-  for (size_t i = 0; i < size; ++i) {
-    samples.add(static_cast<float>(exp(-alpha * static_cast<float>(i)) *
-                                   (rnd.nextBool() ? -1.0 : 1.0)));
-  }
-  return samples;
 }
 
 int VelvetNoiseFilter::getNumberOfImpulses() const { return numberOfImpulses; }
@@ -72,16 +56,36 @@ void VelvetNoiseFilter::recreateFilter() {
 }
 
 void VelvetNoiseFilter::createFilter() {
-  // recreate filter
+  jassert(this->sampleRate > .0);
 
-  int filterSize = static_cast<int>(this->sampleRate *
-                                    this->filterLengthInMillisecond / 1000);
+  // Local random object
+  juce::Random rnd;
 
-  juce::Array<float> filter;
-  filter.resize(filterSize);
+  // Initialise filter
+  const auto filterSize = static_cast<size_t>(
+      this->sampleRate * this->filterLengthInMillisecond / 1000);
+  auto* filter = static_cast<float*>(calloc(filterSize, sizeof(float)));
 
-  float alpha = this->inverseEnergyDecay();
+  // Get all pending indices to store non-zero points in a VNF
+  juce::Array<int> indices;
+  while (indices.size() < static_cast<int>(this->numberOfImpulses)) {
+    int i = rnd.nextInt((int)filterSize);
+    indices.addIfNotAlreadyThere(i);
+  }
+  indices.sort();
+  jassert((size_t)indices.size() == this->numberOfImpulses);
 
-  this->isDirty = false;
+  auto alpha =
+      static_cast<float>((-1 / static_cast<float>(this->numberOfImpulses)) *
+                         log(pow(10.0, this->targetDecayDecibel / 20.0)));
+  for (size_t i = 0; i < this->numberOfImpulses; ++i) {
+    int index = indices[(int)i];
+    filter[index] = static_cast<float>(exp(-alpha * static_cast<float>(i)) *
+                                       (rnd.nextBool() ? -1.0 : 1.0));
+  }
+
+  // TODO: how to use the raw pointer `filter`?
+
+  isDirty = false;
   vnflog("Filter created");
 }

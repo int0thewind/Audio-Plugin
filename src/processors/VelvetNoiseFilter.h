@@ -18,8 +18,7 @@ inline static void vnflog(juce::StringRef msg) {
 
 class VelvetNoiseFilter final : public BaseAudioProcessor {
  public:
-  explicit VelvetNoiseFilter(int, int, float);
-  ~VelvetNoiseFilter() final;
+  explicit VelvetNoiseFilter(unsigned int, unsigned int, float);
 
   void prepareToPlay(double, int) override;
 
@@ -42,28 +41,14 @@ class VelvetNoiseFilter final : public BaseAudioProcessor {
   void setTargetDecayDecibel(float _targetDecayDecibel);
 
  private:
-  /**
-   * Given the energy decay and the number of impulses, what is the alpha?
-   * @param targetDecayDecibel
-   * @param numberOfImpulses
-   * @return
-   */
-  inline float inverseEnergyDecay() {
-    return static_cast<float>(
-        (-1 / static_cast<float>(this->numberOfImpulses)) *
-        log(pow(10.0, this->targetDecayDecibel / 20.0)));
-  }
-
-  juce::Array<float> makeDecayingSample(size_t size, float alpha);
-
   void createFilter();
 
   std::unique_ptr<FIRFilter> vnf{nullptr};
   std::unique_ptr<FIRCoefficient> vnfCoefficient{nullptr};
 
-  double sampleRate;
-  int numberOfImpulses;
-  int filterLengthInMillisecond;
+  double sampleRate{};
+  unsigned int numberOfImpulses;
+  unsigned int filterLengthInMillisecond;
   float targetDecayDecibel;
   bool isDirty = true;
 };
