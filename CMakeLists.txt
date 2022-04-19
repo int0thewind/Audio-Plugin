@@ -38,7 +38,6 @@ target_sources(
         main.cpp
     PRIVATE
         src/dlog.cpp
-        src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp
         src/processors/BaseAudioProcessor.cpp
         src/processors/VelvetNoiseFilter.cpp
