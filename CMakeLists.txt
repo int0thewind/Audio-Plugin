@@ -39,6 +39,7 @@ target_sources(
     PRIVATE
         src/AudioPluginProcessorEditor.cpp
         src/AudioPluginProcessor.cpp
+        src/processors/BaseAudioProcessor.cpp
 )
 
 target_compile_definitions(
