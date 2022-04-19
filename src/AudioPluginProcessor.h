@@ -2,24 +2,6 @@
 
 #include "juce_audio_processors/juce_audio_processors.h"
 
-/**
- * A global function to push log message to the logger.
- * In a production build, this function would do nothing. No logs are recorded.
- * Must call this function instead of invoking `juce::Logger::writeToLog()`
- * to reduce unnecessary operations in a release build.
- * @param msg log message to log.
- */
-inline static void dlog(juce::StringRef msg) {
-#if DEBUG
-  juce::String s{};
-  s << '[' << juce::Time::getCurrentTime().toString(true, true, true, true)
-    << "] " << msg;
-  juce::Logger::writeToLog(s);
-#else
-  juce::ignoreUnused(msg);
-#endif
-}
-
 class AudioPluginProcessor : public juce::AudioProcessor {
  public:
   AudioPluginProcessor();

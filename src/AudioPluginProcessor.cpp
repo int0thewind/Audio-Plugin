@@ -1,6 +1,6 @@
 #include "AudioPluginProcessor.h"
 
-#include "AudioPluginProcessorEditor.h"
+#include "dlog.cpp"
 
 AudioPluginProcessor::AudioPluginProcessor()
     : AudioProcessor(
@@ -141,7 +141,7 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 bool AudioPluginProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
-  return new AudioPluginProcessorEditor(*this);
+  return new juce::GenericAudioProcessorEditor(*this);
 }
 
 void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
