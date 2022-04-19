@@ -14,6 +14,10 @@ AudioPluginProcessor::AudioPluginProcessor()
       ) {
   // Register the logger to the application
   juce::Logger::setCurrentLogger(this->logger.get());
+
+  dlog(juce::String{"Plugin is loaded by "} +
+       AudioPluginProcessor::getWrapperTypeDescription(
+           juce::PluginHostType::getPluginLoadedAs()));
 }
 
 AudioPluginProcessor::~AudioPluginProcessor() {

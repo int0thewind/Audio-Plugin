@@ -10,6 +10,11 @@ AudioPluginProcessorEditor::AudioPluginProcessorEditor(AudioPluginProcessor& p)
 
 void AudioPluginProcessorEditor::paint(juce::Graphics& g) {
   g.fillAll(this->backgroundColor);
+#if DEBUG
+  g.setFont(12.0);
+  g.setColour(juce::Colours::red);
+  g.drawText("DEBUG", 0, 0, 36, 12, juce::Justification::topLeft);
+#endif
 }
 
 void AudioPluginProcessorEditor::resized() {
