@@ -12,8 +12,10 @@ AudioPluginProcessor::AudioPluginProcessor()
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
       ) {
+#if DEBUG
   // Register the logger to the application
   juce::Logger::setCurrentLogger(this->logger.get());
+#endif
 
   this->addParameter(this->vnfNumberOfImpulses);
   this->addParameter(this->vnfFilterLengthInMillisecond);
@@ -25,8 +27,10 @@ AudioPluginProcessor::AudioPluginProcessor()
 }
 
 AudioPluginProcessor::~AudioPluginProcessor() {
+#if DEBUG
   // Deregister the application-wide logger before quitting the plugin.
   juce::Logger::setCurrentLogger(nullptr);
+#endif
 }
 
 const juce::String AudioPluginProcessor::getName() const {

@@ -44,6 +44,7 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   void setStateInformation(const void* data, int sizeInBytes) override;
 
  private:
+#if DEBUG
   /**
    * A application-wide file logger.
    * In a release build, it would be a null pointer. No log recorded.
@@ -52,15 +53,11 @@ class AudioPluginProcessor : public juce::AudioProcessor {
    * Settings\\username\\Application Data\\SoftVelvet`
    * @see dlog
    */
-  std::unique_ptr<juce::FileLogger> logger {
-#if DEBUG
-    juce::FileLogger::createDateStampedLogger(
-        this->getName(), "runtime-log", ".log",
-        "New Instance of SoftVelvet Audio Plugin Initialised")
-#else
-    nullptr
+  std::unique_ptr<juce::FileLogger> logger{
+      juce::FileLogger::createDateStampedLogger(
+          this->getName(), "runtime-log", ".log",
+          "New Instance of SoftVelvet Audio Plugin Initialised")};
 #endif
-  };
 
   // All audio parameters should be raw pointers as the
   // `AudioProcessor::addParameter()` manages all added audio parameters

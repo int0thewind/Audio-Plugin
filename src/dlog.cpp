@@ -2,7 +2,8 @@
 // Created by Hanzhi Yin on 4/19/22.
 //
 
-#pragma once
+#ifndef SOFTVELVET_DLOG_CPP
+#define SOFTVELVET_DLOG_CPP
 
 #include "juce_core/juce_core.h"
 /**
@@ -22,3 +23,5 @@ inline static void dlog(juce::StringRef msg) {
   juce::ignoreUnused(msg);
 #endif
 }
+
+#endif  // SOFTVELVET_DLOG_CPP
