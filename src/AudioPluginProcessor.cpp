@@ -15,6 +15,10 @@ AudioPluginProcessor::AudioPluginProcessor()
   // Register the logger to the application
   juce::Logger::setCurrentLogger(this->logger.get());
 
+  this->addParameter(this->vnfNumberOfImpulses);
+  this->addParameter(this->vnfFilterLengthInMillisecond);
+  this->addParameter(this->vnfTargetDecayDecibel);
+
   dlog(juce::String{"Plugin is loaded by "} +
        AudioPluginProcessor::getWrapperTypeDescription(
            juce::PluginHostType::getPluginLoadedAs()));

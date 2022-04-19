@@ -62,5 +62,18 @@ class AudioPluginProcessor : public juce::AudioProcessor {
 #endif
   };
 
+  // All audio parameters should be raw pointers as the
+  // `AudioProcessor::addParameter()` manages all added audio parameters
+
+  juce::AudioParameterInt* vnfNumberOfImpulses = new juce::AudioParameterInt(
+      "vnf-num-impulses", "Velvet Noise Filter Number of Impulses", 1, 50, 8);
+  juce::AudioParameterInt* vnfFilterLengthInMillisecond =
+      new juce::AudioParameterInt("vnf-filter-length",
+                                  "Velvet Noise Filter Length in ms", 1, 50, 4);
+  juce::AudioParameterFloat* vnfTargetDecayDecibel =
+      new juce::AudioParameterFloat("vnf-filter-target-decay",
+                                    "Velvet Noise Filter Target Decay", -60, 0,
+                                    0);
+
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessor)
 };
