@@ -22,35 +22,38 @@ class VelvetNoiseFilter final : public BaseAudioProcessor {
 
   void prepareToPlay(double, int) override;
 
+  const juce::String getName() const override;
+
   void releaseResources() override;
 
   void processBlock(juce::AudioBuffer<float>& buffer,
                     juce::MidiBuffer& midiMessages) override;
 
   /**
-   * Call this method to recreate the velvet noise filter using the current
-   * parameters.
+   * Call this method to request to recreate the velvet noise filter using the
+   * current parameters.
    */
-  void recreateFilter();
+  inline void requestToRecreateFilter();
 
-  int getNumberOfImpulses() const;
-  void setNumberOfImpulses(int _numberOfImpulses);
-  int getFilterLengthInMillisecond() const;
-  void setFilterLengthInMillisecond(int _filterLengthInMillisecond);
+  size_t getNumberOfImpulses() const;
+  void setNumberOfImpulses(size_t _numberOfImpulses);
+  size_t getFilterLengthInMillisecond() const;
+  void setFilterLengthInMillisecond(size_t _filterLengthInMillisecond);
   float getTargetDecayDecibel() const;
   void setTargetDecayDecibel(float _targetDecayDecibel);
 
  private:
   void createFilter();
 
-  std::unique_ptr<FIRFilter> vnf{nullptr};
-  std::unique_ptr<FIRCoefficient> vnfCoefficient{nullptr};
+  juce::dsp::ProcessorDuplicator<FIRFilter, FIRCoefficient> vnf;
 
-  double sampleRate{};
-  unsigned int numberOfImpulses;
-  unsigned int filterLengthInMillisecond;
+  double savedSampleRate{};
+  size_t numberOfImpulses;
+  size_t filterLengthInMillisecond;
   float targetDecayDecibel;
-  bool isDirty = true;
+  std::atomic<bool> isDirty = true;
+
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VelvetNoiseFilter)
 };
 
 #endif  // SOFTVELVET_VELVETNOISEFILTER_H

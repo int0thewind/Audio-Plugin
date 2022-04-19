@@ -4,15 +4,25 @@
 
 #include "VelvetNoiseFilter.h"
 
-void VelvetNoiseFilter::prepareToPlay(double _sampleRate,
+void VelvetNoiseFilter::prepareToPlay(double sampleRate,
                                       int maximumExpectedSamplesPerBlock) {
-  this->sampleRate = _sampleRate;
+  this->savedSampleRate = sampleRate;
+  this->vnf.prepare(
+      {sampleRate, static_cast<u_int32_t>(maximumExpectedSamplesPerBlock), 2});
+  this->requestToRecreateFilter();
 }
 
 void VelvetNoiseFilter::releaseResources() {}
 
 void VelvetNoiseFilter::processBlock(juce::AudioBuffer<float>& buffer,
-                                     juce::MidiBuffer& midiMessages) {}
+                                     juce::MidiBuffer& midiMessages) {
+  if (this->isDirty.load()) {
+    this->createFilter();
+  }
+  juce::dsp::AudioBlock<float> block(buffer);
+  juce::dsp::ProcessContextReplacing<float> context(block);
+  this->vnf.process(context);
+}
 
 VelvetNoiseFilter::VelvetNoiseFilter(unsigned int _numberOfImpulses,
                                      unsigned int _filterLengthInMillisecond,
@@ -24,21 +34,23 @@ VelvetNoiseFilter::VelvetNoiseFilter(unsigned int _numberOfImpulses,
   vnflog("Instance created");
 }
 
-int VelvetNoiseFilter::getNumberOfImpulses() const { return numberOfImpulses; }
-
-void VelvetNoiseFilter::setNumberOfImpulses(int _numberOfImpulses) {
-  this->numberOfImpulses = _numberOfImpulses;
-  this->recreateFilter();
+size_t VelvetNoiseFilter::getNumberOfImpulses() const {
+  return numberOfImpulses;
 }
 
-int VelvetNoiseFilter::getFilterLengthInMillisecond() const {
+void VelvetNoiseFilter::setNumberOfImpulses(size_t _numberOfImpulses) {
+  this->numberOfImpulses = _numberOfImpulses;
+  this->requestToRecreateFilter();
+}
+
+size_t VelvetNoiseFilter::getFilterLengthInMillisecond() const {
   return filterLengthInMillisecond;
 }
 
 void VelvetNoiseFilter::setFilterLengthInMillisecond(
-    int _filterLengthInMillisecond) {
+    size_t _filterLengthInMillisecond) {
   this->filterLengthInMillisecond = _filterLengthInMillisecond;
-  this->recreateFilter();
+  this->requestToRecreateFilter();
 }
 
 float VelvetNoiseFilter::getTargetDecayDecibel() const {
@@ -47,26 +59,29 @@ float VelvetNoiseFilter::getTargetDecayDecibel() const {
 
 void VelvetNoiseFilter::setTargetDecayDecibel(float _targetDecayDecibel) {
   this->targetDecayDecibel = _targetDecayDecibel;
-  this->recreateFilter();
+  this->requestToRecreateFilter();
 }
 
-void VelvetNoiseFilter::recreateFilter() {
+void VelvetNoiseFilter::requestToRecreateFilter() {
   vnflog("Recreate filter request received.");
   this->isDirty = true;
 }
 
 void VelvetNoiseFilter::createFilter() {
-  jassert(this->sampleRate > .0);
+  jassert(this->savedSampleRate > .0);
 
   // Local random object
   juce::Random rnd;
 
   // Initialise filter
+  // Using raw pointer to ensure all numbers are zero.
   const auto filterSize = static_cast<size_t>(
-      this->sampleRate * this->filterLengthInMillisecond / 1000);
+      this->savedSampleRate *
+      static_cast<double>(this->filterLengthInMillisecond) / 1000.0);
   auto* filter = static_cast<float*>(calloc(filterSize, sizeof(float)));
 
   // Get all pending indices to store non-zero points in a VNF
+  // Using JUCE Array as we need these handy methods
   juce::Array<int> indices;
   while (indices.size() < static_cast<int>(this->numberOfImpulses)) {
     int i = rnd.nextInt((int)filterSize);
@@ -75,6 +90,7 @@ void VelvetNoiseFilter::createFilter() {
   indices.sort();
   jassert((size_t)indices.size() == this->numberOfImpulses);
 
+  // Compute all non-zero value and fill.
   auto alpha =
       static_cast<float>((-1 / static_cast<float>(this->numberOfImpulses)) *
                          log(pow(10.0, this->targetDecayDecibel / 20.0)));
@@ -84,8 +100,18 @@ void VelvetNoiseFilter::createFilter() {
                                        (rnd.nextBool() ? -1.0 : 1.0));
   }
 
-  // TODO: how to use the raw pointer `filter`?
+  // Create filter
+  *(this->vnf.state) = FIRCoefficient(filter, filterSize);
 
-  isDirty = false;
+  // Free up memory
+  delete filter;
+  //  filter = nullptr;
+
+  // Set off the flag
+  this->isDirty = false;
   vnflog("Filter created");
+}
+
+const juce::String VelvetNoiseFilter::getName() const {
+  return "Velvet Noise Filter";
 }
