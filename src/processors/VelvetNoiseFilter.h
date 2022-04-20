@@ -11,10 +11,6 @@
 using FIRFilter = juce::dsp::FIR::Filter<float>;
 using FIRCoefficient = juce::dsp::FIR::Coefficients<float>;
 
-inline static void vnflog(juce::StringRef msg) {
-  dlog("==VelvetNoiseFilter== " + msg);
-}
-
 class VelvetNoiseFilter final : public BaseAudioProcessor {
  public:
   explicit VelvetNoiseFilter(unsigned int, unsigned int, float);

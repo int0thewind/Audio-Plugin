@@ -90,9 +90,9 @@ void AudioPluginProcessor::changeProgramName(int index,
 
 void AudioPluginProcessor::prepareToPlay(double sampleRate,
                                          int samplesPerBlock) {
-  dlog(juce::String("`prepareToPlay` method called."));
-  dlog(juce::String("Sample rate: ") + juce::String(sampleRate, 1));
-  dlog(juce::String("Samples per block: ") + juce::String(samplesPerBlock));
+  dlog(juce::String("AudioPluginProcessor::prepareToPlay() method called") +
+       juce::String(". Sample rate: ") + juce::String(sampleRate, 1) +
+       juce::String(". Samples per block: ") + juce::String(samplesPerBlock));
 
   this->mainProcessor->setPlayConfigDetails(this->getMainBusNumInputChannels(),
                                             this->getMainBusNumOutputChannels(),
@@ -103,6 +103,7 @@ void AudioPluginProcessor::prepareToPlay(double sampleRate,
 }
 
 void AudioPluginProcessor::releaseResources() {
+  dlog(juce::String("AudioPluginProcessor::releaseResources() method called."));
   this->mainProcessor->releaseResources();
 }
 
@@ -137,8 +138,9 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   int totalNumInputChannels = this->getTotalNumInputChannels();
   int totalNumOutputChannels = this->getTotalNumOutputChannels();
 
-  for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+  for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
     buffer.clear(i, 0, buffer.getNumSamples());
+  }
 
   this->mainProcessor->processBlock(buffer, midiMessages);
 }
@@ -150,6 +152,7 @@ juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
 }
 
 void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
+  dlog("AudioPluginProcessor::getStateInformation() method called.");
   std::unique_ptr<juce::XmlElement> xmlState =
       // use the plugin name as the tag name
       std::make_unique<juce::XmlElement>(this->getName());
@@ -159,6 +162,7 @@ void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
 
 void AudioPluginProcessor::setStateInformation(const void *data,
                                                int sizeInBytes) {
+  dlog("AudioPluginProcessor::setStateInformation() method called.");
   std::unique_ptr<juce::XmlElement> xmlState =
       AudioPluginProcessor::getXmlFromBinary(data, sizeInBytes);
 
@@ -171,6 +175,7 @@ void AudioPluginProcessor::setStateInformation(const void *data,
 }
 
 void AudioPluginProcessor::initialiseGraph() {
+  dlog("AudioPluginProcessor::initialiseGraph() method called.");
   this->mainProcessor->clear();
   this->audioInputNode =
       this->mainProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(
@@ -211,10 +216,30 @@ void AudioPluginProcessor::initialiseGraph() {
         juce::AudioProcessorGraph::midiChannelIndex},
        {this->midiOutputNode->nodeID,
         juce::AudioProcessorGraph::midiChannelIndex}});
+
+#if DEBUG
+  dlog("AudioPluginProcessor::initialiseGraph() print connections.");
+  for (const Connection &c : this->mainProcessor->getConnections()) {
+    NodeAndChannel dest = c.destination;
+    NodeAndChannel source = c.source;
+    juce::String s{};
+    s << "Node "
+      << this->mainProcessor->getNodeForId(dest.nodeID)
+             ->getProcessor()
+             ->getName()
+      << " on channel " << dest.channelIndex << " <-- "
+      << this->mainProcessor->getNodeForId(source.nodeID)
+             ->getProcessor()
+             ->getName()
+      << " on channel " << source.channelIndex << ".";
+    dlog(s);
+  }
+  dlog("AudioPluginProcessor::initialiseGraph() print connections finished.");
+#endif
 }
 
 void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
-  // TODO: log all behaviours!
+  dlog("AudioPluginProcessor::parameterValueChanged() method called.");
   if (parameterIndex ==
       this->lowShelfCutoffFreqParameter->getParameterIndex()) {
     ((LowShelfFilter *)this->lowShelfNode->getProcessor())

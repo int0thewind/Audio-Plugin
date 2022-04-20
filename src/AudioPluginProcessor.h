@@ -5,7 +5,10 @@
 #include "processors/VelvetNoiseFilter.h"
 
 using AudioGraphIOProcessor = juce::AudioProcessorGraph::AudioGraphIOProcessor;
+using NodeAndChannel = juce::AudioProcessorGraph::NodeAndChannel;
 using Node = juce::AudioProcessorGraph::Node;
+using NodeID = juce::AudioProcessorGraph::NodeID;
+using Connection = juce::AudioProcessorGraph::Connection;
 
 class AudioPluginProcessor : public juce::AudioProcessor,
                              private juce::AudioProcessorParameter::Listener,

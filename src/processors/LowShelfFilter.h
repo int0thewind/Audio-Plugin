@@ -5,12 +5,13 @@
 #ifndef SOFTVELVET_LOWSHELFFILTER_H
 #define SOFTVELVET_LOWSHELFFILTER_H
 
+#include "../dlog.cpp"
 #include "BaseAudioProcessor.cpp"
 
 using IIRFilter = juce::dsp::IIR::Filter<float>;
 using IIRCoefficient = juce::dsp::IIR::Coefficients<float>;
 
-class LowShelfFilter : public BaseAudioProcessor {
+class LowShelfFilter final : public BaseAudioProcessor {
  public:
   explicit LowShelfFilter(float, float);
   const juce::String getName() const override;

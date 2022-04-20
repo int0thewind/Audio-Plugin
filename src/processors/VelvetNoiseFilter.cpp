@@ -6,18 +6,30 @@
 
 void VelvetNoiseFilter::prepareToPlay(double sampleRate,
                                       int maximumExpectedSamplesPerBlock) {
+  dlog(juce::String("VelvetNoiseFilter::prepareToPlay() method called") +
+       juce::String(". Sample rate: ") + juce::String(sampleRate, 1) +
+       juce::String(". Samples per block: ") +
+       juce::String(maximumExpectedSamplesPerBlock));
+
   this->savedSampleRate = sampleRate;
   this->vnf.prepare(
       {sampleRate, static_cast<u_int32_t>(maximumExpectedSamplesPerBlock), 2});
   this->requestToUpdateProcessorSpec();
 }
 
-void VelvetNoiseFilter::releaseResources() { this->vnf.reset(); }
+void VelvetNoiseFilter::releaseResources() {
+  dlog(juce::String("VelvetNoiseFilter::releaseResources() method called."));
+  this->vnf.reset();
+}
 
 void VelvetNoiseFilter::processBlock(juce::AudioBuffer<float>& buffer,
                                      juce::MidiBuffer& midiMessages) {
   if (this->isDirty.load()) {
+    dlog(
+        "VelvetNoiseFilter::processBlock() detected processor spec update "
+        "request. Update it.");
     this->updateProcessorSpec();
+    dlog("VelvetNoiseFilter::processBlock() update processor spec finished.");
   }
   juce::dsp::AudioBlock<float> block(buffer);
   juce::dsp::ProcessContextReplacing<float> context(block);
@@ -31,17 +43,24 @@ VelvetNoiseFilter::VelvetNoiseFilter(unsigned int _numberOfImpulses,
       numberOfImpulses(_numberOfImpulses),
       filterLengthInMillisecond(_filterLengthInMillisecond),
       targetDecayDecibel(_targetDecayDecibel) {
-  vnflog("Instance created");
+  dlog("VelvetNoiseFilter new instance created");
 }
 
 bool VelvetNoiseFilter::setNumberOfImpulses(size_t _numberOfImpulses) {
+  dlog("VelvetNoiseFilter::setNumberOfImpulses() method called.");
   if (_numberOfImpulses != this->numberOfImpulses) {
     this->getCallbackLock().enter();
     this->numberOfImpulses = _numberOfImpulses;
     this->requestToUpdateProcessorSpec();
     this->getCallbackLock().exit();
+    dlog(
+        "VelvetNoiseFilter::setNumberOfImpulses() successfully set the number "
+        "of impulses to " +
+        juce::String(_numberOfImpulses) + '.');
     return true;
   }
+  dlog("VelvetNoiseFilter::setNumberOfImpulses() value doesn't change from " +
+       juce::String(_numberOfImpulses) + '.');
   return false;
 }
 
@@ -52,25 +71,41 @@ bool VelvetNoiseFilter::setFilterLengthInMillisecond(
     this->filterLengthInMillisecond = _filterLengthInMillisecond;
     this->requestToUpdateProcessorSpec();
     this->getCallbackLock().exit();
+    dlog(
+        "VelvetNoiseFilter::setFilterLengthInMillisecond() successfully set "
+        "the filter length to " +
+        juce::String(_filterLengthInMillisecond) + " ms.");
     return true;
   }
+  dlog(
+      "VelvetNoiseFilter::setFilterLengthInMillisecond() value doesn't change "
+      "from" +
+      juce::String(_filterLengthInMillisecond) + " ms.");
   return false;
 }
 
 bool VelvetNoiseFilter::setTargetDecayDecibel(float _targetDecayDecibel) {
-  bool result = false;
   if (_targetDecayDecibel != this->targetDecayDecibel) {
     this->getCallbackLock().enter();
     this->targetDecayDecibel = _targetDecayDecibel;
     this->requestToUpdateProcessorSpec();
     this->getCallbackLock().exit();
-    result = true;
+    dlog(
+        "VelvetNoiseFilter::setTargetDecayDecibel() successfully set "
+        "the target decay to " +
+        juce::String(_targetDecayDecibel) + " dB.");
+    return true;
   }
-  return result;
+  dlog("VelvetNoiseFilter::setTargetDecayDecibel() value doesn't change from " +
+       juce::String(_targetDecayDecibel) + " dB.");
+  return false;
 }
 
 void VelvetNoiseFilter::updateProcessorSpec() {
   jassert(this->savedSampleRate > .0);
+
+  dlog(juce::String(
+      "AudioPluginProcessor::updateProcessorSpec() method called."));
 
   // Local random object
   juce::Random rnd;
@@ -107,11 +142,12 @@ void VelvetNoiseFilter::updateProcessorSpec() {
 
   // Free up memory
   delete filter;
-  //  filter = nullptr;
+  // filter = nullptr;
 
   // Set off the flag
   this->isDirty = false;
-  vnflog("Filter created");
+  dlog(juce::String(
+      "AudioPluginProcessor::updateProcessorSpec() new filter created."));
 }
 
 const juce::String VelvetNoiseFilter::getName() const {
