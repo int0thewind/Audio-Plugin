@@ -17,9 +17,16 @@ AudioPluginProcessor::AudioPluginProcessor()
   juce::Logger::setCurrentLogger(this->logger.get());
 #endif
 
-  this->addParameter(this->vnfNumberOfImpulses);
-  this->addParameter(this->vnfFilterLengthInMillisecond);
-  this->addParameter(this->vnfTargetDecayDecibel);
+  this->addParameter(this->lowShelfCutoffFreqParameter);
+  this->addParameter(this->lowShelfAttenuationDecibelParameter);
+  this->addParameter(this->vnfNumberOfImpulsesParameter);
+  this->addParameter(this->vnfFilterLengthInMillisecondParameter);
+  this->addParameter(this->vnfTargetDecayDecibelParameter);
+  this->lowShelfCutoffFreqParameter->addListener(this);
+  this->lowShelfAttenuationDecibelParameter->addListener(this);
+  this->vnfFilterLengthInMillisecondParameter->addListener(this);
+  this->vnfNumberOfImpulsesParameter->addListener(this);
+  this->vnfTargetDecayDecibelParameter->addListener(this);
 
   dlog(juce::String{"Plugin is loaded by "} +
        AudioPluginProcessor::getWrapperTypeDescription(
@@ -133,8 +140,6 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     buffer.clear(i, 0, buffer.getNumSamples());
 
-  this->updateGraph();
-
   this->mainProcessor->processBlock(buffer, midiMessages);
 }
 
@@ -164,6 +169,7 @@ void AudioPluginProcessor::setStateInformation(const void *data,
     }
   }
 }
+
 void AudioPluginProcessor::initialiseGraph() {
   this->mainProcessor->clear();
   this->audioInputNode =
@@ -178,17 +184,64 @@ void AudioPluginProcessor::initialiseGraph() {
   this->midiOutputNode =
       this->mainProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(
           AudioGraphIOProcessor::midiOutputNode));
-  this->connectAudioNodes();
-  this->connectMIDINodes();
+
+  this->lowShelfNode =
+      this->mainProcessor->addNode(std::make_unique<LowShelfFilter>(
+          this->lowShelfCutoffFreqParameter->get(),
+          this->lowShelfAttenuationDecibelParameter->get()));
+  this->vnfNode =
+      this->mainProcessor->addNode(std::make_unique<VelvetNoiseFilter>(
+          this->vnfNumberOfImpulsesParameter->get(),
+          this->vnfFilterLengthInMillisecondParameter->get(),
+          this->vnfTargetDecayDecibelParameter->get()));
+
+  // Connect Audio Nodes
+  for (int channel = 0; channel < 2; ++channel) {
+    this->mainProcessor->addConnection({{this->audioInputNode->nodeID, channel},
+                                        {this->lowShelfNode->nodeID, channel}});
+    this->mainProcessor->addConnection({{this->lowShelfNode->nodeID, channel},
+                                        {this->vnfNode->nodeID, channel}});
+    this->mainProcessor->addConnection(
+        {{this->vnfNode->nodeID, channel},
+         {this->audioOutputNode->nodeID, channel}});
+  }
+  // Connect MIDI Nodes
+  this->mainProcessor->addConnection(
+      {{this->midiInputNode->nodeID,
+        juce::AudioProcessorGraph::midiChannelIndex},
+       {this->midiOutputNode->nodeID,
+        juce::AudioProcessorGraph::midiChannelIndex}});
 }
-void AudioPluginProcessor::updateGraph() {}
-void AudioPluginProcessor::connectAudioNodes() {
-  for (int channel = 0; channel < 2; ++channel)
-    mainProcessor->addConnection({{audioInputNode->nodeID, channel},
-                                  {audioOutputNode->nodeID, channel}});
+
+void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
+  // TODO: log all behaviours!
+  if (parameterIndex ==
+      this->lowShelfCutoffFreqParameter->getParameterIndex()) {
+    ((LowShelfFilter *)this->lowShelfNode->getProcessor())
+        ->setCutoffFreq(this->lowShelfCutoffFreqParameter->get());
+  } else if (parameterIndex ==
+             this->lowShelfAttenuationDecibelParameter->getParameterIndex()) {
+    ((LowShelfFilter *)this->lowShelfNode->getProcessor())
+        ->setAttenuationDecibel(
+            this->lowShelfAttenuationDecibelParameter->get());
+  } else if (parameterIndex ==
+             this->vnfFilterLengthInMillisecondParameter->getParameterIndex()) {
+    ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+        ->setFilterLengthInMillisecond(static_cast<size_t>(
+            this->vnfFilterLengthInMillisecondParameter->get()));
+  } else if (parameterIndex ==
+             this->vnfNumberOfImpulsesParameter->getParameterIndex()) {
+    ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+        ->setNumberOfImpulses(
+            static_cast<size_t>(this->vnfNumberOfImpulsesParameter->get()));
+  } else if (parameterIndex ==
+             this->vnfTargetDecayDecibelParameter->getParameterIndex()) {
+    ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+        ->setTargetDecayDecibel(this->vnfTargetDecayDecibelParameter->get());
+  }
 }
-void AudioPluginProcessor::connectMIDINodes() {
-  mainProcessor->addConnection(
-      {{midiInputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex},
-       {midiOutputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex}});
+void AudioPluginProcessor::parameterGestureChanged(int parameterIndex,
+                                                   bool gestureIsStarting) {}
+void AudioPluginProcessor::handleAsyncUpdate() {
+  // TODO: should I do async update?
 }

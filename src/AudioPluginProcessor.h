@@ -1,11 +1,15 @@
 #pragma once
 
 #include "juce_audio_processors/juce_audio_processors.h"
+#include "processors/LowShelfFilter.h"
+#include "processors/VelvetNoiseFilter.h"
 
 using AudioGraphIOProcessor = juce::AudioProcessorGraph::AudioGraphIOProcessor;
 using Node = juce::AudioProcessorGraph::Node;
 
-class AudioPluginProcessor : public juce::AudioProcessor {
+class AudioPluginProcessor : public juce::AudioProcessor,
+                             private juce::AudioProcessorParameter::Listener,
+                             private juce::AsyncUpdater {
  public:
   AudioPluginProcessor();
   ~AudioPluginProcessor() override;
@@ -61,11 +65,14 @@ class AudioPluginProcessor : public juce::AudioProcessor {
           this->getName(), "runtime-log", ".log",
           "New Instance of SoftVelvet Audio Plugin Initialised")};
 #endif
+  void parameterValueChanged(int parameterIndex, float newValue) override;
+  void parameterGestureChanged(int parameterIndex,
+                               bool gestureIsStarting) override;
 
   void initialiseGraph();
-  void updateGraph();
-  void connectAudioNodes();
-  void connectMIDINodes();
+
+  Node::Ptr lowShelfNode;
+  Node::Ptr vnfNode;
 
   std::unique_ptr<juce::AudioProcessorGraph> mainProcessor =
       std::make_unique<juce::AudioProcessorGraph>();
@@ -74,18 +81,30 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   Node::Ptr midiInputNode;
   Node::Ptr midiOutputNode;
 
+  void handleAsyncUpdate() override;
+
   // All audio parameters should be raw pointers as the
   // `AudioProcessor::addParameter()` manages all added audio parameters
 
-  juce::AudioParameterInt* vnfNumberOfImpulses = new juce::AudioParameterInt(
-      "vnf-num-impulses", "Velvet Noise Filter Number of Impulses", 1, 50, 8);
-  juce::AudioParameterInt* vnfFilterLengthInMillisecond =
+  juce::AudioParameterFloat* lowShelfCutoffFreqParameter =
+      new juce::AudioParameterFloat("low-shelf-cutoff-freq",
+                                    "Low Shelf Filter Cutoff Frequency", 25,
+                                    200, 50);
+  juce::AudioParameterFloat* lowShelfAttenuationDecibelParameter =
+      new juce::AudioParameterFloat("low-shelf-attenuation",
+                                    "Low Shelf Filter Attenuation in Decibel",
+                                    -60, 0, -20);
+  juce::AudioParameterInt* vnfNumberOfImpulsesParameter =
+      new juce::AudioParameterInt("vnf-num-impulses",
+                                  "Velvet Noise Filter Number of Impulses", 1,
+                                  50, 8);
+  juce::AudioParameterInt* vnfFilterLengthInMillisecondParameter =
       new juce::AudioParameterInt("vnf-filter-length",
                                   "Velvet Noise Filter Length in ms", 1, 50, 4);
-  juce::AudioParameterFloat* vnfTargetDecayDecibel =
-      new juce::AudioParameterFloat("vnf-filter-target-decay",
-                                    "Velvet Noise Filter Target Decay", -60, 0,
-                                    0);
+  juce::AudioParameterFloat* vnfTargetDecayDecibelParameter =
+      new juce::AudioParameterFloat(
+          "vnf-filter-target-decay",
+          "Velvet Noise Filter Target Decay in Decibel", -60, 0, -20);
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessor)
 };
