@@ -41,6 +41,7 @@ target_sources(
         src/AudioPluginProcessor.cpp
         src/processors/BaseAudioProcessor.cpp
         src/processors/VelvetNoiseFilter.cpp
+        src/processors/LowShelfFilter.cpp
 )
 
 target_compile_definitions(
