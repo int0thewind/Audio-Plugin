@@ -34,32 +34,39 @@ VelvetNoiseFilter::VelvetNoiseFilter(unsigned int _numberOfImpulses,
   vnflog("Instance created");
 }
 
-size_t VelvetNoiseFilter::getNumberOfImpulses() const {
-  return numberOfImpulses;
+bool VelvetNoiseFilter::setNumberOfImpulses(size_t _numberOfImpulses) {
+  if (_numberOfImpulses != this->numberOfImpulses) {
+    this->getCallbackLock().enter();
+    this->numberOfImpulses = _numberOfImpulses;
+    this->requestToUpdateProcessorSpec();
+    this->getCallbackLock().exit();
+    return true;
+  }
+  return false;
 }
 
-void VelvetNoiseFilter::setNumberOfImpulses(size_t _numberOfImpulses) {
-  this->numberOfImpulses = _numberOfImpulses;
-  this->requestToUpdateProcessorSpec();
-}
-
-size_t VelvetNoiseFilter::getFilterLengthInMillisecond() const {
-  return filterLengthInMillisecond;
-}
-
-void VelvetNoiseFilter::setFilterLengthInMillisecond(
+bool VelvetNoiseFilter::setFilterLengthInMillisecond(
     size_t _filterLengthInMillisecond) {
-  this->filterLengthInMillisecond = _filterLengthInMillisecond;
-  this->requestToUpdateProcessorSpec();
+  if (_filterLengthInMillisecond != this->filterLengthInMillisecond) {
+    this->getCallbackLock().enter();
+    this->filterLengthInMillisecond = _filterLengthInMillisecond;
+    this->requestToUpdateProcessorSpec();
+    this->getCallbackLock().exit();
+    return true;
+  }
+  return false;
 }
 
-float VelvetNoiseFilter::getTargetDecayDecibel() const {
-  return targetDecayDecibel;
-}
-
-void VelvetNoiseFilter::setTargetDecayDecibel(float _targetDecayDecibel) {
-  this->targetDecayDecibel = _targetDecayDecibel;
-  this->requestToUpdateProcessorSpec();
+bool VelvetNoiseFilter::setTargetDecayDecibel(float _targetDecayDecibel) {
+  bool result = false;
+  if (_targetDecayDecibel != this->targetDecayDecibel) {
+    this->getCallbackLock().enter();
+    this->targetDecayDecibel = _targetDecayDecibel;
+    this->requestToUpdateProcessorSpec();
+    this->getCallbackLock().exit();
+    result = true;
+  }
+  return result;
 }
 
 void VelvetNoiseFilter::updateProcessorSpec() {

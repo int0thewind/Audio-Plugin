@@ -28,13 +28,9 @@ class VelvetNoiseFilter final : public BaseAudioProcessor {
   void processBlock(juce::AudioBuffer<float>& buffer,
                     juce::MidiBuffer& midiMessages) override;
 
-
-  size_t getNumberOfImpulses() const;
-  void setNumberOfImpulses(size_t _numberOfImpulses);
-  size_t getFilterLengthInMillisecond() const;
-  void setFilterLengthInMillisecond(size_t _filterLengthInMillisecond);
-  float getTargetDecayDecibel() const;
-  void setTargetDecayDecibel(float _targetDecayDecibel);
+  bool setNumberOfImpulses(size_t _numberOfImpulses);
+  bool setFilterLengthInMillisecond(size_t _filterLengthInMillisecond);
+  bool setTargetDecayDecibel(float _targetDecayDecibel);
 
  private:
   void updateProcessorSpec() override;

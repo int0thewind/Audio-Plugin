@@ -19,6 +19,8 @@ class LowShelfFilter : public BaseAudioProcessor {
   void releaseResources() override;
   void processBlock(juce::AudioBuffer<float>& buffer,
                     juce::MidiBuffer& midiMessages) override;
+  bool setCutoffFreq(float cutoffFreq);
+  bool setAttenuationDecibel(float _attenuationDecibel);
 
  private:
   void updateProcessorSpec() override;

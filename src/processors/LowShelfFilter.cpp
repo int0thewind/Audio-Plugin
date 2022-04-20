@@ -31,3 +31,23 @@ void LowShelfFilter::updateProcessorSpec() {
   this->lowShelf.state = IIRCoefficient::makeLowShelf(
       this->savedSampleRate, this->cutoffFreq, 5, this->attenuationDecibel);
 }
+bool LowShelfFilter::setCutoffFreq(float _cutoffFreq) {
+  if (_cutoffFreq == this->cutoffFreq) {
+    this->getCallbackLock().enter();
+    this->cutoffFreq = _cutoffFreq;
+    this->requestToUpdateProcessorSpec();
+    this->getCallbackLock().exit();
+    return true;
+  }
+  return false;
+}
+bool LowShelfFilter::setAttenuationDecibel(float _attenuationDecibel) {
+  if (_attenuationDecibel == this->attenuationDecibel) {
+    this->getCallbackLock().enter();
+    LowShelfFilter::attenuationDecibel = _attenuationDecibel;
+    this->requestToUpdateProcessorSpec();
+    this->getCallbackLock().exit();
+    return true;
+  }
+  return false;
+}
