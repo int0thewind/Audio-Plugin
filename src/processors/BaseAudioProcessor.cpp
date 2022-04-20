@@ -6,6 +6,7 @@
 #define SOFTVELVET_BASEPROCESSOR_CPP
 
 #include "juce_audio_processors/juce_audio_processors.h"
+#include "juce_dsp/juce_dsp.h"
 
 /** Abstract and pure audio processor that serves as the skeleton. */
 class BaseAudioProcessor : public juce::AudioProcessor {
@@ -32,7 +33,16 @@ class BaseAudioProcessor : public juce::AudioProcessor {
   void getStateInformation(juce::MemoryBlock&) override {}
   void setStateInformation(const void*, int) override {}
 
+  /** Call this method to request the audio processor to be updated. */
+  inline void requestToUpdateProcessorSpec() { this->isDirty = true; }
+
+ protected:
+  /** Special atomic variable denoting that the processor needs to be updated.
+   */
+  std::atomic<bool> isDirty = true;
+
  private:
+  virtual void updateProcessorSpec() = 0;
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BaseAudioProcessor)
 };
 

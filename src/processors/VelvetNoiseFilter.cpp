@@ -9,15 +9,15 @@ void VelvetNoiseFilter::prepareToPlay(double sampleRate,
   this->savedSampleRate = sampleRate;
   this->vnf.prepare(
       {sampleRate, static_cast<u_int32_t>(maximumExpectedSamplesPerBlock), 2});
-  this->requestToRecreateFilter();
+  this->requestToUpdateProcessorSpec();
 }
 
-void VelvetNoiseFilter::releaseResources() {}
+void VelvetNoiseFilter::releaseResources() { this->vnf.reset(); }
 
 void VelvetNoiseFilter::processBlock(juce::AudioBuffer<float>& buffer,
                                      juce::MidiBuffer& midiMessages) {
   if (this->isDirty.load()) {
-    this->createFilter();
+    this->updateProcessorSpec();
   }
   juce::dsp::AudioBlock<float> block(buffer);
   juce::dsp::ProcessContextReplacing<float> context(block);
@@ -40,7 +40,7 @@ size_t VelvetNoiseFilter::getNumberOfImpulses() const {
 
 void VelvetNoiseFilter::setNumberOfImpulses(size_t _numberOfImpulses) {
   this->numberOfImpulses = _numberOfImpulses;
-  this->requestToRecreateFilter();
+  this->requestToUpdateProcessorSpec();
 }
 
 size_t VelvetNoiseFilter::getFilterLengthInMillisecond() const {
@@ -50,7 +50,7 @@ size_t VelvetNoiseFilter::getFilterLengthInMillisecond() const {
 void VelvetNoiseFilter::setFilterLengthInMillisecond(
     size_t _filterLengthInMillisecond) {
   this->filterLengthInMillisecond = _filterLengthInMillisecond;
-  this->requestToRecreateFilter();
+  this->requestToUpdateProcessorSpec();
 }
 
 float VelvetNoiseFilter::getTargetDecayDecibel() const {
@@ -59,15 +59,10 @@ float VelvetNoiseFilter::getTargetDecayDecibel() const {
 
 void VelvetNoiseFilter::setTargetDecayDecibel(float _targetDecayDecibel) {
   this->targetDecayDecibel = _targetDecayDecibel;
-  this->requestToRecreateFilter();
+  this->requestToUpdateProcessorSpec();
 }
 
-void VelvetNoiseFilter::requestToRecreateFilter() {
-  vnflog("Recreate filter request received.");
-  this->isDirty = true;
-}
-
-void VelvetNoiseFilter::createFilter() {
+void VelvetNoiseFilter::updateProcessorSpec() {
   jassert(this->savedSampleRate > .0);
 
   // Local random object
