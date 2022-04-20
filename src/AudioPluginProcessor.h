@@ -2,6 +2,9 @@
 
 #include "juce_audio_processors/juce_audio_processors.h"
 
+using AudioGraphIOProcessor = juce::AudioProcessorGraph::AudioGraphIOProcessor;
+using Node = juce::AudioProcessorGraph::Node;
+
 class AudioPluginProcessor : public juce::AudioProcessor {
  public:
   AudioPluginProcessor();
@@ -58,6 +61,18 @@ class AudioPluginProcessor : public juce::AudioProcessor {
           this->getName(), "runtime-log", ".log",
           "New Instance of SoftVelvet Audio Plugin Initialised")};
 #endif
+
+  void initialiseGraph();
+  void updateGraph();
+  void connectAudioNodes();
+  void connectMIDINodes();
+
+  std::unique_ptr<juce::AudioProcessorGraph> mainProcessor =
+      std::make_unique<juce::AudioProcessorGraph>();
+  Node::Ptr audioInputNode;
+  Node::Ptr audioOutputNode;
+  Node::Ptr midiInputNode;
+  Node::Ptr midiOutputNode;
 
   // All audio parameters should be raw pointers as the
   // `AudioProcessor::addParameter()` manages all added audio parameters

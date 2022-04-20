@@ -86,11 +86,17 @@ void AudioPluginProcessor::prepareToPlay(double sampleRate,
   dlog(juce::String("`prepareToPlay` method called."));
   dlog(juce::String("Sample rate: ") + juce::String(sampleRate, 1));
   dlog(juce::String("Samples per block: ") + juce::String(samplesPerBlock));
+
+  this->mainProcessor->setPlayConfigDetails(this->getMainBusNumInputChannels(),
+                                            this->getMainBusNumOutputChannels(),
+                                            sampleRate, samplesPerBlock);
+  this->mainProcessor->prepareToPlay(sampleRate, samplesPerBlock);
+
+  this->initialiseGraph();
 }
 
 void AudioPluginProcessor::releaseResources() {
-  // When playback stops, you can use this as an opportunity to free up any
-  // spare memory, etc.
+  this->mainProcessor->releaseResources();
 }
 
 bool AudioPluginProcessor::isBusesLayoutSupported(
@@ -124,26 +130,12 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   int totalNumInputChannels = this->getTotalNumInputChannels();
   int totalNumOutputChannels = this->getTotalNumOutputChannels();
 
-  // In case we have more outputs than inputs, this code clears any output
-  // channels that didn't contain input data, (because these aren't
-  // guaranteed to be empty - they may contain garbage).
-  // This is here to avoid people getting screaming feedback
-  // when they first compile a plugin, but obviously you don't need to keep
-  // this code if your algorithm always overwrites all the output channels.
   for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     buffer.clear(i, 0, buffer.getNumSamples());
 
-  // This is the place where you'd normally do the guts of your plugin's
-  // audio processing...
-  // Make sure to reset the state if your inner loop is processing
-  // the samples and the outer loop is handling the channels.
-  // Alternatively, you can process the samples with the channels
-  // interleaved by keeping the same state.
-  for (int channel = 0; channel < totalNumInputChannels; ++channel) {
-    float *channelData = buffer.getWritePointer(channel);
-    juce::ignoreUnused(channelData);
-    // ...do something to the data...
-  }
+  this->updateGraph();
+
+  this->mainProcessor->processBlock(buffer, midiMessages);
 }
 
 bool AudioPluginProcessor::hasEditor() const { return true; }
@@ -171,4 +163,32 @@ void AudioPluginProcessor::setStateInformation(const void *data,
       // TODO: restore audio parameters from the XML element
     }
   }
+}
+void AudioPluginProcessor::initialiseGraph() {
+  this->mainProcessor->clear();
+  this->audioInputNode =
+      this->mainProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::audioInputNode));
+  this->audioOutputNode =
+      this->mainProcessor->addNode((std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::audioOutputNode)));
+  this->midiInputNode =
+      this->mainProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::midiInputNode));
+  this->midiOutputNode =
+      this->mainProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::midiOutputNode));
+  this->connectAudioNodes();
+  this->connectMIDINodes();
+}
+void AudioPluginProcessor::updateGraph() {}
+void AudioPluginProcessor::connectAudioNodes() {
+  for (int channel = 0; channel < 2; ++channel)
+    mainProcessor->addConnection({{audioInputNode->nodeID, channel},
+                                  {audioOutputNode->nodeID, channel}});
+}
+void AudioPluginProcessor::connectMIDINodes() {
+  mainProcessor->addConnection(
+      {{midiInputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex},
+       {midiOutputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex}});
 }
