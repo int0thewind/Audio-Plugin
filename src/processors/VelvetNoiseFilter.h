@@ -1,7 +1,3 @@
-//
-// Created by Hanzhi Yin on 4/19/22.
-//
-
 #ifndef SOFTVELVET_VELVETNOISEFILTER_H
 #define SOFTVELVET_VELVETNOISEFILTER_H
 

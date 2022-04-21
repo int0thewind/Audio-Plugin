@@ -1,7 +1,3 @@
-//
-// Created by Hanzhi Yin on 3/2/22.
-//
-
 #include "src/AudioPluginProcessor.h"
 
 /**

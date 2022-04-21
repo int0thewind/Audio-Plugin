@@ -1,7 +1,3 @@
-//
-// Created by Hanzhi Yin on 4/19/22.
-//
-
 #ifndef SOFTVELVET_BASEPROCESSOR_CPP
 #define SOFTVELVET_BASEPROCESSOR_CPP
 

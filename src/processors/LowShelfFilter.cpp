@@ -1,7 +1,3 @@
-//
-// Created by Hanzhi Yin on 4/19/22.
-//
-
 #include "LowShelfFilter.h"
 const juce::String LowShelfFilter::getName() const {
   return "Low Shelf Filter";

@@ -1,7 +1,3 @@
-//
-// Created by Hanzhi Yin on 4/19/22.
-//
-
 #include "VelvetNoiseFilter.h"
 
 void VelvetNoiseFilter::prepareToPlay(double sampleRate,
