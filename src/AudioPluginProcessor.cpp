@@ -265,8 +265,5 @@ void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
         ->setTargetDecayDecibel(this->vnfTargetDecayDecibelParameter->get());
   }
 }
-void AudioPluginProcessor::parameterGestureChanged(int parameterIndex,
-                                                   bool gestureIsStarting) {}
-void AudioPluginProcessor::handleAsyncUpdate() {
-  // TODO: should I do async update?
-}
+
+void AudioPluginProcessor::parameterGestureChanged(int, bool) {}

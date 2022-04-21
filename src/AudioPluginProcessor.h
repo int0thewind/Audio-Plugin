@@ -7,12 +7,10 @@
 using AudioGraphIOProcessor = juce::AudioProcessorGraph::AudioGraphIOProcessor;
 using NodeAndChannel = juce::AudioProcessorGraph::NodeAndChannel;
 using Node = juce::AudioProcessorGraph::Node;
-using NodeID = juce::AudioProcessorGraph::NodeID;
 using Connection = juce::AudioProcessorGraph::Connection;
 
 class AudioPluginProcessor : public juce::AudioProcessor,
-                             private juce::AudioProcessorParameter::Listener,
-                             private juce::AsyncUpdater {
+                             private juce::AudioProcessorParameter::Listener {
  public:
   AudioPluginProcessor();
   ~AudioPluginProcessor() override;
@@ -83,8 +81,6 @@ class AudioPluginProcessor : public juce::AudioProcessor,
   Node::Ptr audioOutputNode;
   Node::Ptr midiInputNode;
   Node::Ptr midiOutputNode;
-
-  void handleAsyncUpdate() override;
 
   // All audio parameters should be raw pointers as the
   // `AudioProcessor::addParameter()` manages all added audio parameters
