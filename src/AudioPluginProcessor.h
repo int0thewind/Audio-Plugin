@@ -70,17 +70,14 @@ class AudioPluginProcessor : public juce::AudioProcessor,
   void parameterGestureChanged(int parameterIndex,
                                bool gestureIsStarting) override;
 
-  void initialiseGraph();
-
-  Node::Ptr lowShelfNode;
-  Node::Ptr vnfNode;
-
-  std::unique_ptr<juce::AudioProcessorGraph> mainProcessor =
+  std::unique_ptr<juce::AudioProcessorGraph> audioProcessorGraph =
       std::make_unique<juce::AudioProcessorGraph>();
   Node::Ptr audioInputNode;
   Node::Ptr audioOutputNode;
   Node::Ptr midiInputNode;
   Node::Ptr midiOutputNode;
+  Node::Ptr lowShelfNode;
+  Node::Ptr vnfNode;
 
   // All audio parameters should be raw pointers as the
   // `AudioProcessor::addParameter()` manages all added audio parameters
