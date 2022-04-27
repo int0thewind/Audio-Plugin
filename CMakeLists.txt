@@ -37,8 +37,11 @@ target_sources(
     PUBLIC
         main.cpp
     PRIVATE
-        src/AudioPluginProcessorEditor.cpp
+        src/dlog.cpp
         src/AudioPluginProcessor.cpp
+        src/processors/BaseAudioProcessor.cpp
+        src/processors/VelvetNoiseFilter.cpp
+        src/processors/LowShelfFilter.cpp
 )
 
 target_compile_definitions(

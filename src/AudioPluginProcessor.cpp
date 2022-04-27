@@ -1,7 +1,5 @@
 #include "AudioPluginProcessor.h"
 
-#include "AudioPluginProcessorEditor.h"
-
 AudioPluginProcessor::AudioPluginProcessor()
     : AudioProcessor(
           BusesProperties()
@@ -12,13 +10,33 @@ AudioPluginProcessor::AudioPluginProcessor()
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
       ) {
-  // Register the logger to the application
+  // Register the logger to the application if in DEBUG mode
+#if DEBUG
   juce::Logger::setCurrentLogger(this->logger.get());
+#endif
+
+  // Register audio parameters and their listener
+  this->addParameter(this->lowShelfCutoffFreqParameter);
+  this->addParameter(this->lowShelfAttenuationDecibelParameter);
+  this->addParameter(this->vnfNumberOfImpulsesParameter);
+  this->addParameter(this->vnfFilterLengthInMillisecondParameter);
+  this->addParameter(this->vnfTargetDecayDecibelParameter);
+  this->lowShelfCutoffFreqParameter->addListener(this);
+  this->lowShelfAttenuationDecibelParameter->addListener(this);
+  this->vnfFilterLengthInMillisecondParameter->addListener(this);
+  this->vnfNumberOfImpulsesParameter->addListener(this);
+  this->vnfTargetDecayDecibelParameter->addListener(this);
+
+  dlog(juce::String{"Plugin is loaded by "} +
+       AudioPluginProcessor::getWrapperTypeDescription(
+           juce::PluginHostType::getPluginLoadedAs()));
 }
 
 AudioPluginProcessor::~AudioPluginProcessor() {
+#if DEBUG
   // Deregister the application-wide logger before quitting the plugin.
   juce::Logger::setCurrentLogger(nullptr);
+#endif
 }
 
 const juce::String AudioPluginProcessor::getName() const {
@@ -71,14 +89,84 @@ void AudioPluginProcessor::changeProgramName(int index,
 
 void AudioPluginProcessor::prepareToPlay(double sampleRate,
                                          int samplesPerBlock) {
-  dlog(juce::String("`prepareToPlay` method called."));
-  dlog(juce::String("Sample rate: ") + juce::String(sampleRate, 1));
-  dlog(juce::String("Samples per block: ") + juce::String(samplesPerBlock));
+  dlog(juce::String("AudioPluginProcessor::prepareToPlay() method called") +
+       juce::String(". Sample rate: ") + juce::String(sampleRate, 1) +
+       juce::String(". Samples per block: ") + juce::String(samplesPerBlock));
+
+  // Prepare the processing chain
+
+  this->audioProcessorGraph->setPlayConfigDetails(
+      this->getMainBusNumInputChannels(), this->getMainBusNumOutputChannels(),
+      sampleRate, samplesPerBlock);
+  this->audioProcessorGraph->prepareToPlay(sampleRate, samplesPerBlock);
+  this->audioProcessorGraph->clear();
+
+  // Adding audio nodes
+  this->audioInputNode = this->audioProcessorGraph->addNode(
+      std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::audioInputNode));
+  this->audioOutputNode = this->audioProcessorGraph->addNode(
+      (std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::audioOutputNode)));
+  this->midiInputNode = this->audioProcessorGraph->addNode(
+      std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::midiInputNode));
+  this->midiOutputNode = this->audioProcessorGraph->addNode(
+      std::make_unique<AudioGraphIOProcessor>(
+          AudioGraphIOProcessor::midiOutputNode));
+
+  // Adding processor nodes
+  this->lowShelfNode =
+      this->audioProcessorGraph->addNode(std::make_unique<LowShelfFilter>(
+          this->lowShelfCutoffFreqParameter->get(),
+          this->lowShelfAttenuationDecibelParameter->get()));
+  this->vnfNode =
+      this->audioProcessorGraph->addNode(std::make_unique<VelvetNoiseFilter>(
+          this->vnfNumberOfImpulsesParameter->get(),
+          this->vnfFilterLengthInMillisecondParameter->get(),
+          this->vnfTargetDecayDecibelParameter->get()));
+
+  // Connect Audio Nodes
+  for (int channel = 0; channel < 2; ++channel) {
+    this->audioProcessorGraph->addConnection(
+        {{this->audioInputNode->nodeID, channel},
+         {this->lowShelfNode->nodeID, channel}});
+    this->audioProcessorGraph->addConnection(
+        {{this->lowShelfNode->nodeID, channel},
+         {this->vnfNode->nodeID, channel}});
+    this->audioProcessorGraph->addConnection(
+        {{this->vnfNode->nodeID, channel},
+         {this->audioOutputNode->nodeID, channel}});
+  }
+  // Connect MIDI Nodes
+  audioProcessorGraph->addConnection(
+      {{midiInputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex},
+       {midiOutputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex}});
+
+#if DEBUG
+  dlog("AudioPluginProcessor::initialiseGraph() print connections.");
+  for (const Connection &c : this->audioProcessorGraph->getConnections()) {
+    NodeAndChannel dest = c.destination;
+    NodeAndChannel source = c.source;
+    juce::String s{};
+    s << "Node "
+      << this->audioProcessorGraph->getNodeForId(dest.nodeID)
+             ->getProcessor()
+             ->getName()
+      << " on channel " << dest.channelIndex << " <-- "
+      << this->audioProcessorGraph->getNodeForId(source.nodeID)
+             ->getProcessor()
+             ->getName()
+      << " on channel " << source.channelIndex << ".";
+    dlog(s);
+  }
+  dlog("AudioPluginProcessor::initialiseGraph() print connections finished.");
+#endif
 }
 
 void AudioPluginProcessor::releaseResources() {
-  // When playback stops, you can use this as an opportunity to free up any
-  // spare memory, etc.
+  dlog(juce::String("AudioPluginProcessor::releaseResources() method called."));
+  this->audioProcessorGraph->releaseResources();
 }
 
 bool AudioPluginProcessor::isBusesLayoutSupported(
@@ -112,35 +200,26 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   int totalNumInputChannels = this->getTotalNumInputChannels();
   int totalNumOutputChannels = this->getTotalNumOutputChannels();
 
-  // In case we have more outputs than inputs, this code clears any output
-  // channels that didn't contain input data, (because these aren't
-  // guaranteed to be empty - they may contain garbage).
-  // This is here to avoid people getting screaming feedback
-  // when they first compile a plugin, but obviously you don't need to keep
-  // this code if your algorithm always overwrites all the output channels.
-  for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+  for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
     buffer.clear(i, 0, buffer.getNumSamples());
-
-  // This is the place where you'd normally do the guts of your plugin's
-  // audio processing...
-  // Make sure to reset the state if your inner loop is processing
-  // the samples and the outer loop is handling the channels.
-  // Alternatively, you can process the samples with the channels
-  // interleaved by keeping the same state.
-  for (int channel = 0; channel < totalNumInputChannels; ++channel) {
-    float *channelData = buffer.getWritePointer(channel);
-    juce::ignoreUnused(channelData);
-    // ...do something to the data...
   }
+
+  this->audioProcessorGraph->processBlock(buffer, midiMessages);
 }
 
 bool AudioPluginProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
-  return new AudioPluginProcessorEditor(*this);
+  juce::AudioProcessorEditor *editor =
+      new juce::GenericAudioProcessorEditor(*this);
+#if DEBUG
+  editor->setAlpha(0.5);
+#endif
+  return editor;
 }
 
 void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
+  dlog("AudioPluginProcessor::getStateInformation() method called.");
   std::unique_ptr<juce::XmlElement> xmlState =
       // use the plugin name as the tag name
       std::make_unique<juce::XmlElement>(this->getName());
@@ -150,6 +229,7 @@ void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
 
 void AudioPluginProcessor::setStateInformation(const void *data,
                                                int sizeInBytes) {
+  dlog("AudioPluginProcessor::setStateInformation() method called.");
   std::unique_ptr<juce::XmlElement> xmlState =
       AudioPluginProcessor::getXmlFromBinary(data, sizeInBytes);
 
@@ -158,5 +238,33 @@ void AudioPluginProcessor::setStateInformation(const void *data,
     if (xmlState->hasTagName(this->getName())) {
       // TODO: restore audio parameters from the XML element
     }
+  }
+}
+
+void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
+  dlog("AudioPluginProcessor::parameterValueChanged() method called.");
+  if (parameterIndex ==
+      this->lowShelfCutoffFreqParameter->getParameterIndex()) {
+    ((LowShelfFilter *)this->lowShelfNode->getProcessor())
+        ->setCutoffFreq(this->lowShelfCutoffFreqParameter->get());
+  } else if (parameterIndex ==
+             this->lowShelfAttenuationDecibelParameter->getParameterIndex()) {
+    ((LowShelfFilter *)this->lowShelfNode->getProcessor())
+        ->setAttenuationDecibel(
+            this->lowShelfAttenuationDecibelParameter->get());
+  } else if (parameterIndex ==
+             this->vnfFilterLengthInMillisecondParameter->getParameterIndex()) {
+    ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+        ->setFilterLengthInMillisecond(static_cast<size_t>(
+            this->vnfFilterLengthInMillisecondParameter->get()));
+  } else if (parameterIndex ==
+             this->vnfNumberOfImpulsesParameter->getParameterIndex()) {
+    ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+        ->setNumberOfImpulses(
+            static_cast<size_t>(this->vnfNumberOfImpulsesParameter->get()));
+  } else if (parameterIndex ==
+             this->vnfTargetDecayDecibelParameter->getParameterIndex()) {
+    ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+        ->setTargetDecayDecibel(this->vnfTargetDecayDecibelParameter->get());
   }
 }

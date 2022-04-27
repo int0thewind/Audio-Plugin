@@ -1,26 +1,18 @@
 #pragma once
 
+#include "dlog.cpp"
 #include "juce_audio_processors/juce_audio_processors.h"
+#include "processors/LowShelfFilter.h"
+#include "processors/VelvetNoiseFilter.h"
 
-/**
- * A global function to push log message to the logger.
- * In a production build, this function would do nothing. No logs are recorded.
- * Must call this function instead of invoking `juce::Logger::writeToLog()`
- * to reduce unnecessary operations in a release build.
- * @param msg log message to log.
- */
-inline static void dlog(juce::StringRef msg) {
-#if DEBUG
-  juce::String s{};
-  s << '[' << juce::Time::getCurrentTime().toString(true, true, true, true)
-    << "] " << msg;
-  juce::Logger::writeToLog(s);
-#else
-  juce::ignoreUnused(msg);
-#endif
-}
+using AudioGraphIOProcessor = juce::AudioProcessorGraph::AudioGraphIOProcessor;
+using NodeAndChannel = juce::AudioProcessorGraph::NodeAndChannel;
+using Node = juce::AudioProcessorGraph::Node;
+using Connection = juce::AudioProcessorGraph::Connection;
 
-class AudioPluginProcessor : public juce::AudioProcessor {
+class AudioPluginProcessor final
+    : public juce::AudioProcessor,
+      private juce::AudioProcessorParameter::Listener {
  public:
   AudioPluginProcessor();
   ~AudioPluginProcessor() override;
@@ -31,7 +23,6 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 
   void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
-  using AudioProcessor::processBlock;
 
   /** Create a GUI of the plugin when required. */
   juce::AudioProcessorEditor* createEditor() override;
@@ -62,6 +53,7 @@ class AudioPluginProcessor : public juce::AudioProcessor {
   void setStateInformation(const void* data, int sizeInBytes) override;
 
  private:
+#if DEBUG
   /**
    * A application-wide file logger.
    * In a release build, it would be a null pointer. No log recorded.
@@ -70,15 +62,45 @@ class AudioPluginProcessor : public juce::AudioProcessor {
    * Settings\\username\\Application Data\\SoftVelvet`
    * @see dlog
    */
-  std::unique_ptr<juce::FileLogger> logger {
-#if DEBUG
-    juce::FileLogger::createDateStampedLogger(
-        this->getName(), "runtime-log", ".log",
-        "New Instance of SoftVelvet Audio Plugin Initialised")
-#else
-    nullptr
+  std::unique_ptr<juce::FileLogger> logger{
+      juce::FileLogger::createDateStampedLogger(
+          this->getName(), "runtime-log", ".log",
+          "New Instance of SoftVelvet Audio Plugin Initialised")};
 #endif
-  };
+  void parameterValueChanged(int parameterIndex, float newValue) override;
+  void parameterGestureChanged(int, bool) override {}
+
+  std::unique_ptr<juce::AudioProcessorGraph> audioProcessorGraph =
+      std::make_unique<juce::AudioProcessorGraph>();
+  Node::Ptr audioInputNode;
+  Node::Ptr audioOutputNode;
+  Node::Ptr midiInputNode;
+  Node::Ptr midiOutputNode;
+  Node::Ptr lowShelfNode;
+  Node::Ptr vnfNode;
+
+  // All audio parameters should be raw pointers as the
+  // `AudioProcessor::addParameter()` manages all added audio parameters
+
+  juce::AudioParameterFloat* lowShelfCutoffFreqParameter =
+      new juce::AudioParameterFloat("low-shelf-cutoff-freq",
+                                    "Low Shelf Filter Cutoff Frequency", 25,
+                                    200, 50);
+  juce::AudioParameterFloat* lowShelfAttenuationDecibelParameter =
+      new juce::AudioParameterFloat("low-shelf-attenuation",
+                                    "Low Shelf Filter Attenuation in Decibel",
+                                    -60, 0, -20);
+  juce::AudioParameterInt* vnfNumberOfImpulsesParameter =
+      new juce::AudioParameterInt("vnf-num-impulses",
+                                  "Velvet Noise Filter Number of Impulses", 1,
+                                  20, 8);
+  juce::AudioParameterInt* vnfFilterLengthInMillisecondParameter =
+      new juce::AudioParameterInt("vnf-filter-length",
+                                  "Velvet Noise Filter Length in ms", 1, 10, 4);
+  juce::AudioParameterFloat* vnfTargetDecayDecibelParameter =
+      new juce::AudioParameterFloat(
+          "vnf-filter-target-decay",
+          "Velvet Noise Filter Target Decay in Decibel", -60, 0, -20);
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessor)
 };
