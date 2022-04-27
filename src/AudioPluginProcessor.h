@@ -93,10 +93,10 @@ class AudioPluginProcessor final
   juce::AudioParameterInt* vnfNumberOfImpulsesParameter =
       new juce::AudioParameterInt("vnf-num-impulses",
                                   "Velvet Noise Filter Number of Impulses", 1,
-                                  50, 8);
+                                  20, 8);
   juce::AudioParameterInt* vnfFilterLengthInMillisecondParameter =
       new juce::AudioParameterInt("vnf-filter-length",
-                                  "Velvet Noise Filter Length in ms", 1, 50, 4);
+                                  "Velvet Noise Filter Length in ms", 1, 10, 4);
   juce::AudioParameterFloat* vnfTargetDecayDecibelParameter =
       new juce::AudioParameterFloat(
           "vnf-filter-target-decay",

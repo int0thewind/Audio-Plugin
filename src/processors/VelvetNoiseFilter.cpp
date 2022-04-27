@@ -104,15 +104,21 @@ void VelvetNoiseFilter::updateProcessorSpec() {
   dlog(juce::String(
       "AudioPluginProcessor::updateProcessorSpec() method called."));
 
+  bool result = this->getCallbackLock().tryEnter();
+  //  dlog(juce::String("AudioPluginProcessor::updateProcessorSpec() has the "
+  //                    "callback lock previously ") +
+  //       (result ? "unlocked" : "locked"));
+
   // Local random object
   juce::Random rnd;
 
   // Initialise filter
   // Using raw pointer to ensure all numbers are zero.
-  const auto filterSize = static_cast<size_t>(
+  const auto filterSize = static_cast<const size_t>(
       this->savedSampleRate *
       static_cast<double>(this->filterLengthInMillisecond) / 1000.0);
-  auto* filter = static_cast<float*>(calloc(filterSize, sizeof(float)));
+  FIRCoefficient::Ptr filterCoefficient = new FIRCoefficient(filterSize);
+  float* filter = filterCoefficient->getRawCoefficients();
 
   // Get all pending indices to store non-zero points in a VNF
   // Using JUCE Array as we need these handy methods
@@ -123,6 +129,17 @@ void VelvetNoiseFilter::updateProcessorSpec() {
   }
   indices.sort();
   jassert((size_t)indices.size() == this->numberOfImpulses);
+
+  {
+    juce::String s = "Pending indices: {";
+    for (const int& i : indices) s << i << ", ";
+    s << '}';
+    dlog(s);
+    s.clear();
+    s = "Filter size: ";
+    s << filterSize;
+    dlog(s);
+  }
 
   // Compute all non-zero value and fill.
   auto alpha =
@@ -135,15 +152,14 @@ void VelvetNoiseFilter::updateProcessorSpec() {
   }
 
   // Create filter
-  *(this->vnf.state) = FIRCoefficient(filter, filterSize);
-
-  // Free up memory
-  free(filter);
+  *(this->vnf.state) = *(filterCoefficient);
 
   // Set off the flag
   this->isDirty = false;
   dlog(juce::String(
       "AudioPluginProcessor::updateProcessorSpec() new filter created."));
+
+  if (result) this->getCallbackLock().exit();
 }
 
 const juce::String VelvetNoiseFilter::getName() const {
