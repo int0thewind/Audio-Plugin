@@ -44,9 +44,9 @@ LowShelfFilter::LowShelfFilter(float _cutoffFreq, float _attenuationDecibel)
 
 void LowShelfFilter::updateProcessorSpec() {
   dlog("LowShelfFilter::updateProcessorSpec() method called.");
-  this->lowShelf.state = IIRCoefficient::makeLowShelf(
+  *(this->lowShelf.state) = *(IIRCoefficient::makeLowShelf(
       this->savedSampleRate, this->cutoffFreq, 5,
-      juce::Decibels::decibelsToGain(this->attenuationDecibel));
+      juce::Decibels::decibelsToGain(this->attenuationDecibel)));
   this->isDirty = false;
   dlog("LowShelfFilter::updateProcessorSpec() new filter created.");
 }
