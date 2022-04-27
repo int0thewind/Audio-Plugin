@@ -2,6 +2,9 @@
 #define SOFTVELVET_DLOG_CPP
 
 #include "juce_core/juce_core.h"
+
+static juce::CriticalSection lock;
+
 /**
  * A global function to push log message to the logger.
  * In a production build, this function would do nothing. No logs are recorded.
@@ -9,14 +12,10 @@
  * to reduce unnecessary operations in a release build.
  * @param msg log message to log.
  */
-inline static void dlog(juce::StringRef msg) {
+[[maybe_unused]] inline static void dlog([[maybe_unused]] juce::StringRef msg) {
 #if DEBUG
-  juce::String s{};
-  s << '[' << juce::Time::getCurrentTime().toString(true, true, true, true)
-    << "] " << msg;
-  juce::Logger::writeToLog(s);
-#else
-  juce::ignoreUnused(msg);
+  const juce::ScopedLock scopedLock(lock);
+  juce::Logger::writeToLog(msg);
 #endif
 }
 
