@@ -4,9 +4,6 @@
 #include "../dlog.cpp"
 #include "BaseAudioProcessor.cpp"
 
-using IIRFilter = juce::dsp::IIR::Filter<float>;
-using IIRCoefficient = juce::dsp::IIR::Coefficients<float>;
-
 class LowShelfFilter final : public BaseAudioProcessor {
  public:
   explicit LowShelfFilter(float, float);
@@ -22,7 +19,9 @@ class LowShelfFilter final : public BaseAudioProcessor {
  private:
   void updateProcessorSpec() override;
 
-  juce::dsp::ProcessorDuplicator<IIRFilter, IIRCoefficient> lowShelf;
+  juce::dsp::ProcessorDuplicator<dsp::IIR::Filter<float>,
+                                 dsp::IIR::Coefficients<float>>
+      lowShelf;
 
   double savedSampleRate{};
   float cutoffFreq;

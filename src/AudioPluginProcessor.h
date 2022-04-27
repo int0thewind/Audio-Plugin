@@ -1,7 +1,7 @@
 #pragma once
 
+#include "JuceHeader.h"
 #include "dlog.cpp"
-#include "juce_audio_processors/juce_audio_processors.h"
 #include "processors/LowShelfFilter.h"
 #include "processors/VelvetNoiseFilter.h"
 

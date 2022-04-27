@@ -40,7 +40,7 @@ AudioPluginProcessor::~AudioPluginProcessor() {
 }
 
 const juce::String AudioPluginProcessor::getName() const {
-  return JucePlugin_Name;
+  return ProjectInfo::projectName;
 }
 
 bool AudioPluginProcessor::acceptsMidi() const {
@@ -79,7 +79,7 @@ void AudioPluginProcessor::setCurrentProgram(int index) {
 
 const juce::String AudioPluginProcessor::getProgramName(int index) {
   juce::ignoreUnused(index);
-  return {};
+  return ProjectInfo::projectName;
 }
 
 void AudioPluginProcessor::changeProgramName(int index,
@@ -179,8 +179,8 @@ bool AudioPluginProcessor::isBusesLayoutSupported(
   // In this template code we only support mono or stereo.
   // Some plugin hosts, such as certain GarageBand versions, will only
   // load plugins that support stereo bus layouts.
-  if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() &&
-      layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+  if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono() &&
+      layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
     return false;
 
     // This checks if the input layout matches the output layout
@@ -193,10 +193,9 @@ bool AudioPluginProcessor::isBusesLayoutSupported(
 #endif
 }
 
-void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
-                                        juce::MidiBuffer &midiMessages) {
-  juce::ignoreUnused(midiMessages);
-  juce::ScopedNoDenormals noDenormals;
+void AudioPluginProcessor::processBlock(AudioBuffer<float> &buffer,
+                                        MidiBuffer &midiMessages) {
+  ScopedNoDenormals noDenormals;
   int totalNumInputChannels = this->getTotalNumInputChannels();
   int totalNumOutputChannels = this->getTotalNumOutputChannels();
 
