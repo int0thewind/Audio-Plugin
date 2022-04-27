@@ -12,7 +12,8 @@ void LowShelfFilter::prepareToPlay(double sampleRate,
 
   this->savedSampleRate = sampleRate;
   this->lowShelf.prepare(
-      {sampleRate, static_cast<u_int32_t>(maximumExpectedSamplesPerBlock), 2});
+      {sampleRate, static_cast<juce::uint32>(maximumExpectedSamplesPerBlock),
+       2});
   this->requestToUpdateProcessorSpec();
 }
 

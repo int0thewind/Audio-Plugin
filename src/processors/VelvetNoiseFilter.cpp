@@ -8,8 +8,9 @@ void VelvetNoiseFilter::prepareToPlay(double sampleRate,
        juce::String(maximumExpectedSamplesPerBlock));
 
   this->savedSampleRate = sampleRate;
-  this->vnf.prepare(
-      {sampleRate, static_cast<u_int32_t>(maximumExpectedSamplesPerBlock), 2});
+  this->vnf.prepare({sampleRate,
+                     static_cast<juce::uint32>(maximumExpectedSamplesPerBlock),
+                     2});
   this->requestToUpdateProcessorSpec();
 }
 
@@ -137,8 +138,7 @@ void VelvetNoiseFilter::updateProcessorSpec() {
   *(this->vnf.state) = FIRCoefficient(filter, filterSize);
 
   // Free up memory
-  delete filter;
-  // filter = nullptr;
+  free(filter);
 
   // Set off the flag
   this->isDirty = false;
