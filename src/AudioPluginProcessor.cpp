@@ -1,9 +1,5 @@
 #include "AudioPluginProcessor.h"
 
-#include <tic.h>
-
-#include "dlog.cpp"
-
 AudioPluginProcessor::AudioPluginProcessor()
     : AudioProcessor(
           BusesProperties()
@@ -99,42 +95,48 @@ void AudioPluginProcessor::prepareToPlay(double sampleRate,
 
   // Prepare the processing chain
 
-  audioProcessorGraph->setPlayConfigDetails(getMainBusNumInputChannels(),
-                                            getMainBusNumOutputChannels(),
-                                            sampleRate, samplesPerBlock);
-  audioProcessorGraph->prepareToPlay(sampleRate, samplesPerBlock);
+  this->audioProcessorGraph->setPlayConfigDetails(
+      this->getMainBusNumInputChannels(), this->getMainBusNumOutputChannels(),
+      sampleRate, samplesPerBlock);
+  this->audioProcessorGraph->prepareToPlay(sampleRate, samplesPerBlock);
+  this->audioProcessorGraph->clear();
 
-  dlog("AudioPluginProcessor::initialiseGraph() method called.");
-  audioProcessorGraph->clear();
-  audioInputNode =
-      audioProcessorGraph->addNode(std::make_unique<AudioGraphIOProcessor>(
+  // Adding audio nodes
+  this->audioInputNode = this->audioProcessorGraph->addNode(
+      std::make_unique<AudioGraphIOProcessor>(
           AudioGraphIOProcessor::audioInputNode));
-  audioOutputNode =
-      audioProcessorGraph->addNode((std::make_unique<AudioGraphIOProcessor>(
+  this->audioOutputNode = this->audioProcessorGraph->addNode(
+      (std::make_unique<AudioGraphIOProcessor>(
           AudioGraphIOProcessor::audioOutputNode)));
-  midiInputNode =
-      audioProcessorGraph->addNode(std::make_unique<AudioGraphIOProcessor>(
+  this->midiInputNode = this->audioProcessorGraph->addNode(
+      std::make_unique<AudioGraphIOProcessor>(
           AudioGraphIOProcessor::midiInputNode));
-  midiOutputNode =
-      audioProcessorGraph->addNode(std::make_unique<AudioGraphIOProcessor>(
+  this->midiOutputNode = this->audioProcessorGraph->addNode(
+      std::make_unique<AudioGraphIOProcessor>(
           AudioGraphIOProcessor::midiOutputNode));
 
-  lowShelfNode = audioProcessorGraph->addNode(std::make_unique<LowShelfFilter>(
-      lowShelfCutoffFreqParameter->get(),
-      lowShelfAttenuationDecibelParameter->get()));
-  vnfNode = audioProcessorGraph->addNode(std::make_unique<VelvetNoiseFilter>(
-      vnfNumberOfImpulsesParameter->get(),
-      vnfFilterLengthInMillisecondParameter->get(),
-      vnfTargetDecayDecibelParameter->get()));
+  // Adding processor nodes
+  this->lowShelfNode =
+      this->audioProcessorGraph->addNode(std::make_unique<LowShelfFilter>(
+          this->lowShelfCutoffFreqParameter->get(),
+          this->lowShelfAttenuationDecibelParameter->get()));
+  this->vnfNode =
+      this->audioProcessorGraph->addNode(std::make_unique<VelvetNoiseFilter>(
+          this->vnfNumberOfImpulsesParameter->get(),
+          this->vnfFilterLengthInMillisecondParameter->get(),
+          this->vnfTargetDecayDecibelParameter->get()));
 
   // Connect Audio Nodes
   for (int channel = 0; channel < 2; ++channel) {
-    audioProcessorGraph->addConnection(
-        {{audioInputNode->nodeID, channel}, {lowShelfNode->nodeID, channel}});
-    audioProcessorGraph->addConnection(
-        {{lowShelfNode->nodeID, channel}, {vnfNode->nodeID, channel}});
-    audioProcessorGraph->addConnection(
-        {{vnfNode->nodeID, channel}, {audioOutputNode->nodeID, channel}});
+    this->audioProcessorGraph->addConnection(
+        {{this->audioInputNode->nodeID, channel},
+         {this->lowShelfNode->nodeID, channel}});
+    this->audioProcessorGraph->addConnection(
+        {{this->lowShelfNode->nodeID, channel},
+         {this->vnfNode->nodeID, channel}});
+    this->audioProcessorGraph->addConnection(
+        {{this->vnfNode->nodeID, channel},
+         {this->audioOutputNode->nodeID, channel}});
   }
   // Connect MIDI Nodes
   audioProcessorGraph->addConnection(
@@ -208,7 +210,12 @@ void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 bool AudioPluginProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
-  return new juce::GenericAudioProcessorEditor(*this);
+  juce::AudioProcessorEditor *editor =
+      new juce::GenericAudioProcessorEditor(*this);
+#if DEBUG
+  editor->setAlpha(0.5);
+#endif
+  return editor;
 }
 
 void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
@@ -261,5 +268,3 @@ void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
         ->setTargetDecayDecibel(this->vnfTargetDecayDecibelParameter->get());
   }
 }
-
-void AudioPluginProcessor::parameterGestureChanged(int, bool) {}

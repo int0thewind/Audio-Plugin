@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dlog.cpp"
 #include "juce_audio_processors/juce_audio_processors.h"
 #include "processors/LowShelfFilter.h"
 #include "processors/VelvetNoiseFilter.h"
@@ -9,8 +10,9 @@ using NodeAndChannel = juce::AudioProcessorGraph::NodeAndChannel;
 using Node = juce::AudioProcessorGraph::Node;
 using Connection = juce::AudioProcessorGraph::Connection;
 
-class AudioPluginProcessor : public juce::AudioProcessor,
-                             private juce::AudioProcessorParameter::Listener {
+class AudioPluginProcessor final
+    : public juce::AudioProcessor,
+      private juce::AudioProcessorParameter::Listener {
  public:
   AudioPluginProcessor();
   ~AudioPluginProcessor() override;
@@ -21,7 +23,6 @@ class AudioPluginProcessor : public juce::AudioProcessor,
   bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 
   void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
-  using AudioProcessor::processBlock;
 
   /** Create a GUI of the plugin when required. */
   juce::AudioProcessorEditor* createEditor() override;
@@ -67,8 +68,7 @@ class AudioPluginProcessor : public juce::AudioProcessor,
           "New Instance of SoftVelvet Audio Plugin Initialised")};
 #endif
   void parameterValueChanged(int parameterIndex, float newValue) override;
-  void parameterGestureChanged(int parameterIndex,
-                               bool gestureIsStarting) override;
+  void parameterGestureChanged(int, bool) override {}
 
   std::unique_ptr<juce::AudioProcessorGraph> audioProcessorGraph =
       std::make_unique<juce::AudioProcessorGraph>();
