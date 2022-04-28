@@ -90,7 +90,10 @@ void MainComponent::getNextAudioBlock(
     bufferToFill.clearActiveBufferRegion();
     return;
   }
+  jassert(bufferToFill.startSample == 0);
   this->transportSource->getNextAudioBlock(bufferToFill);
+  MidiBuffer tempMidiBuffer;
+  this->processor->processBlock(*(bufferToFill.buffer), tempMidiBuffer);
 }
 
 void MainComponent::resized() {
@@ -213,6 +216,7 @@ void MainComponent::changeListenerCallback(ChangeBroadcaster* source) {
     } else {
       if (this->state == Playing) {
         // Keep looping!
+        this->processor->requestToUpdateProcessorSpec();
         this->transportSource->setPosition(0.0);
         this->transportSource->start();
       } else if (this->state == Pausing) {

@@ -262,3 +262,9 @@ void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
         ->setTargetDecayDecibel(this->vnfTargetDecayDecibelParameter->get());
   }
 }
+void AudioPluginProcessor::requestToUpdateProcessorSpec() {
+  ((LowShelfFilter *)this->lowShelfNode->getProcessor())
+      ->requestToUpdateProcessorSpec();
+  ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+      ->requestToUpdateProcessorSpec();
+}

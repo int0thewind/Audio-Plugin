@@ -52,6 +52,8 @@ class AudioPluginProcessor final
   void getStateInformation(juce::MemoryBlock& destData) override;
   void setStateInformation(const void* data, int sizeInBytes) override;
 
+  void requestToUpdateProcessorSpec();
+
  private:
 #if DEBUG
   /**
