@@ -143,10 +143,6 @@ void AudioPluginProcessor::prepareToPlay(double sampleRate,
         {{this->vnfNode->nodeID, channel},
          {this->audioOutputNode->nodeID, channel}});
   }
-  // Connect MIDI Nodes
-  audioProcessorGraph->addConnection(
-      {{midiInputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex},
-       {midiOutputNode->nodeID, juce::AudioProcessorGraph::midiChannelIndex}});
 
 #if DEBUG
   dlog("AudioPluginProcessor::initialiseGraph() print connections.");
@@ -282,6 +278,7 @@ void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
     this->gain = this->gainParameter->get();
   }
 }
+
 void AudioPluginProcessor::requestToUpdateProcessorSpec() {
   ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
       ->requestToUpdateProcessorSpec();
