@@ -103,6 +103,10 @@ class AudioPluginProcessor final
       new juce::AudioParameterFloat(
           "vnf-filter-target-decay",
           "Velvet Noise Filter Target Decay in Decibel", -60, 0, -20);
+  juce::AudioParameterFloat* gainParameter =
+      new AudioParameterFloat("gain", "Gain", 0.0, 1.0, 0.2f);
+
+  Atomic<float> gain{0.2f};
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessor)
 };

@@ -21,11 +21,13 @@ AudioPluginProcessor::AudioPluginProcessor()
   this->addParameter(this->vnfNumberOfImpulsesParameter);
   this->addParameter(this->vnfFilterLengthInMillisecondParameter);
   this->addParameter(this->vnfTargetDecayDecibelParameter);
+  this->addParameter(this->gainParameter);
   this->lowShelfCutoffFreqParameter->addListener(this);
   this->lowShelfAttenuationDecibelParameter->addListener(this);
   this->vnfFilterLengthInMillisecondParameter->addListener(this);
   this->vnfNumberOfImpulsesParameter->addListener(this);
   this->vnfTargetDecayDecibelParameter->addListener(this);
+  this->gainParameter->addListener(this);
 
   dlog(juce::String{"Plugin is loaded by "} +
        AudioPluginProcessor::getWrapperTypeDescription(
@@ -198,12 +200,22 @@ void AudioPluginProcessor::processBlock(AudioBuffer<float> &buffer,
   ScopedNoDenormals noDenormals;
   int totalNumInputChannels = this->getTotalNumInputChannels();
   int totalNumOutputChannels = this->getTotalNumOutputChannels();
+  float currentGain = this->gain.get();
+  int numSamples = buffer.getNumSamples();
 
   for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
-    buffer.clear(i, 0, buffer.getNumSamples());
+    buffer.clear(i, 0, numSamples);
   }
 
+  AudioBuffer<float> originalBuffer;
+  originalBuffer.makeCopyOf(buffer);
+
   this->audioProcessorGraph->processBlock(buffer, midiMessages);
+  buffer.applyGain(currentGain);
+
+  for (int i = 0; i < totalNumInputChannels; ++i) {
+    buffer.addFrom(i, 0, originalBuffer, i, 0, numSamples, 1 - currentGain);
+  }
 }
 
 bool AudioPluginProcessor::hasEditor() const { return true; }
@@ -260,11 +272,11 @@ void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
              this->vnfTargetDecayDecibelParameter->getParameterIndex()) {
     ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
         ->setTargetDecayDecibel(this->vnfTargetDecayDecibelParameter->get());
+  } else if (parameterIndex == this->gainParameter->getParameterIndex()) {
+    this->gain = this->gainParameter->get();
   }
 }
 void AudioPluginProcessor::requestToUpdateProcessorSpec() {
-  ((LowShelfFilter *)this->lowShelfNode->getProcessor())
-      ->requestToUpdateProcessorSpec();
   ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
       ->requestToUpdateProcessorSpec();
 }
