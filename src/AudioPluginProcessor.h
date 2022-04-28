@@ -1,7 +1,7 @@
 #pragma once
 
+#include "JuceHeader.h"
 #include "dlog.cpp"
-#include "juce_audio_processors/juce_audio_processors.h"
 #include "processors/LowShelfFilter.h"
 #include "processors/VelvetNoiseFilter.h"
 
@@ -52,6 +52,8 @@ class AudioPluginProcessor final
   void getStateInformation(juce::MemoryBlock& destData) override;
   void setStateInformation(const void* data, int sizeInBytes) override;
 
+  void requestToUpdateProcessorSpec();
+
  private:
 #if DEBUG
   /**
@@ -101,6 +103,10 @@ class AudioPluginProcessor final
       new juce::AudioParameterFloat(
           "vnf-filter-target-decay",
           "Velvet Noise Filter Target Decay in Decibel", -60, 0, -20);
+  juce::AudioParameterFloat* gainParameter =
+      new AudioParameterFloat("gain", "Gain", 0.0, 1.0, 0.2f);
+
+  Atomic<float> gain{0.2f};
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginProcessor)
 };

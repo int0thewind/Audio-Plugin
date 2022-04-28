@@ -21,11 +21,13 @@ AudioPluginProcessor::AudioPluginProcessor()
   this->addParameter(this->vnfNumberOfImpulsesParameter);
   this->addParameter(this->vnfFilterLengthInMillisecondParameter);
   this->addParameter(this->vnfTargetDecayDecibelParameter);
+  this->addParameter(this->gainParameter);
   this->lowShelfCutoffFreqParameter->addListener(this);
   this->lowShelfAttenuationDecibelParameter->addListener(this);
   this->vnfFilterLengthInMillisecondParameter->addListener(this);
   this->vnfNumberOfImpulsesParameter->addListener(this);
   this->vnfTargetDecayDecibelParameter->addListener(this);
+  this->gainParameter->addListener(this);
 
   dlog(juce::String{"Plugin is loaded by "} +
        AudioPluginProcessor::getWrapperTypeDescription(
@@ -40,7 +42,7 @@ AudioPluginProcessor::~AudioPluginProcessor() {
 }
 
 const juce::String AudioPluginProcessor::getName() const {
-  return JucePlugin_Name;
+  return ProjectInfo::projectName;
 }
 
 bool AudioPluginProcessor::acceptsMidi() const {
@@ -79,7 +81,7 @@ void AudioPluginProcessor::setCurrentProgram(int index) {
 
 const juce::String AudioPluginProcessor::getProgramName(int index) {
   juce::ignoreUnused(index);
-  return {};
+  return ProjectInfo::projectName;
 }
 
 void AudioPluginProcessor::changeProgramName(int index,
@@ -179,8 +181,8 @@ bool AudioPluginProcessor::isBusesLayoutSupported(
   // In this template code we only support mono or stereo.
   // Some plugin hosts, such as certain GarageBand versions, will only
   // load plugins that support stereo bus layouts.
-  if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() &&
-      layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+  if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono() &&
+      layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
     return false;
 
     // This checks if the input layout matches the output layout
@@ -193,29 +195,33 @@ bool AudioPluginProcessor::isBusesLayoutSupported(
 #endif
 }
 
-void AudioPluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
-                                        juce::MidiBuffer &midiMessages) {
-  juce::ignoreUnused(midiMessages);
-  juce::ScopedNoDenormals noDenormals;
+void AudioPluginProcessor::processBlock(AudioBuffer<float> &buffer,
+                                        MidiBuffer &midiMessages) {
+  ScopedNoDenormals noDenormals;
   int totalNumInputChannels = this->getTotalNumInputChannels();
   int totalNumOutputChannels = this->getTotalNumOutputChannels();
+  float currentGain = this->gain.get();
+  int numSamples = buffer.getNumSamples();
 
   for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
-    buffer.clear(i, 0, buffer.getNumSamples());
+    buffer.clear(i, 0, numSamples);
   }
 
+  AudioBuffer<float> originalBuffer;
+  originalBuffer.makeCopyOf(buffer);
+
   this->audioProcessorGraph->processBlock(buffer, midiMessages);
+  buffer.applyGain(currentGain);
+
+  for (int i = 0; i < totalNumInputChannels; ++i) {
+    buffer.addFrom(i, 0, originalBuffer, i, 0, numSamples, 1 - currentGain);
+  }
 }
 
 bool AudioPluginProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
-  juce::AudioProcessorEditor *editor =
-      new juce::GenericAudioProcessorEditor(*this);
-#if DEBUG
-  editor->setAlpha(0.5);
-#endif
-  return editor;
+  return new juce::GenericAudioProcessorEditor(*this);
 }
 
 void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
@@ -266,5 +272,11 @@ void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
              this->vnfTargetDecayDecibelParameter->getParameterIndex()) {
     ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
         ->setTargetDecayDecibel(this->vnfTargetDecayDecibelParameter->get());
+  } else if (parameterIndex == this->gainParameter->getParameterIndex()) {
+    this->gain = this->gainParameter->get();
   }
+}
+void AudioPluginProcessor::requestToUpdateProcessorSpec() {
+  ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
+      ->requestToUpdateProcessorSpec();
 }

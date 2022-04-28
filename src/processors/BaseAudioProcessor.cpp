@@ -1,8 +1,7 @@
 #ifndef SOFTVELVET_BASEPROCESSOR_CPP
 #define SOFTVELVET_BASEPROCESSOR_CPP
 
-#include "juce_audio_processors/juce_audio_processors.h"
-#include "juce_dsp/juce_dsp.h"
+#include "JuceHeader.h"
 
 /** Abstract and pure audio processor that serves as the skeleton. */
 class BaseAudioProcessor : public juce::AudioProcessor {
