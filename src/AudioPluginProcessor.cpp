@@ -18,12 +18,14 @@ AudioPluginProcessor::AudioPluginProcessor()
   // Register audio parameters and their listener
   this->addParameter(this->lowShelfCutoffFreqParameter);
   this->addParameter(this->lowShelfAttenuationDecibelParameter);
+  this->addParameter(this->lowShelfQParameter);
   this->addParameter(this->vnfNumberOfImpulsesParameter);
   this->addParameter(this->vnfFilterLengthInMillisecondParameter);
   this->addParameter(this->vnfTargetDecayDecibelParameter);
   this->addParameter(this->gainParameter);
   this->lowShelfCutoffFreqParameter->addListener(this);
   this->lowShelfAttenuationDecibelParameter->addListener(this);
+  this->lowShelfQParameter->addListener(this);
   this->vnfFilterLengthInMillisecondParameter->addListener(this);
   this->vnfNumberOfImpulsesParameter->addListener(this);
   this->vnfTargetDecayDecibelParameter->addListener(this);
@@ -121,7 +123,8 @@ void AudioPluginProcessor::prepareToPlay(double sampleRate,
   this->lowShelfNode =
       this->audioProcessorGraph->addNode(std::make_unique<LowShelfFilter>(
           this->lowShelfCutoffFreqParameter->get(),
-          this->lowShelfAttenuationDecibelParameter->get()));
+          this->lowShelfAttenuationDecibelParameter->get(),
+          this->lowShelfQParameter->get()));
   this->vnfNode =
       this->audioProcessorGraph->addNode(std::make_unique<VelvetNoiseFilter>(
           this->vnfNumberOfImpulsesParameter->get(),
@@ -258,6 +261,9 @@ void AudioPluginProcessor::parameterValueChanged(int parameterIndex, float) {
     ((LowShelfFilter *)this->lowShelfNode->getProcessor())
         ->setAttenuationDecibel(
             this->lowShelfAttenuationDecibelParameter->get());
+  } else if (parameterIndex == this->lowShelfQParameter->getParameterIndex()) {
+    ((LowShelfFilter *)this->lowShelfNode->getProcessor())
+        ->setQ(this->lowShelfQParameter->get());
   } else if (parameterIndex ==
              this->vnfFilterLengthInMillisecondParameter->getParameterIndex()) {
     ((VelvetNoiseFilter *)this->vnfNode->getProcessor())
