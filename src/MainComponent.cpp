@@ -153,9 +153,6 @@ void MainComponent::updateTransportState(TransportState newState) {
   } else if (newState == Loading) {
     this->playPauseButton->setEnabled(false);
     this->openFileButton->setEnabled(false);
-    //    this->transportSource->setPosition(0.0);
-    //    this->readerSource = nullptr;
-    //    this->transportSource->setSource(nullptr);
   } else {
     jassertfalse;
   }
