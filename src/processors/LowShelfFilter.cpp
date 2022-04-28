@@ -36,18 +36,20 @@ void LowShelfFilter::processBlock(juce::AudioBuffer<float>& buffer,
   this->lowShelf.process(context);
 }
 
-LowShelfFilter::LowShelfFilter(float _cutoffFreq, float _attenuationDecibel)
+LowShelfFilter::LowShelfFilter(float _cutoffFreq, float _attenuationDecibel,
+                               float _q)
     : BaseAudioProcessor(),
       cutoffFreq(_cutoffFreq),
-      attenuationDecibel(_attenuationDecibel) {
+      attenuationDecibel(_attenuationDecibel),
+      q(_q) {
   dlog("LowShelfFilter new instance created");
 }
 
 void LowShelfFilter::updateProcessorSpec() {
   dlog("LowShelfFilter::updateProcessorSpec() method called.");
   *(this->lowShelf.state) = *(dsp::IIR::Coefficients<float>::makeLowShelf(
-      this->savedSampleRate, this->cutoffFreq, 5,
-      juce::Decibels::decibelsToGain(this->attenuationDecibel)));
+      this->savedSampleRate, this->cutoffFreq, this->q,
+      Decibels::decibelsToGain(this->attenuationDecibel)));
   this->isDirty = false;
   dlog("LowShelfFilter::updateProcessorSpec() new filter created.");
 }
@@ -66,6 +68,20 @@ bool LowShelfFilter::setCutoffFreq(float _cutoffFreq) {
   }
   dlog("LowShelfFilter::setCutoffFreq() value doesn't change from " +
        juce::String(_cutoffFreq) + " Hz.");
+  return false;
+}
+
+bool LowShelfFilter::setQ(float _q) {
+  if (_q != this->q) {
+    this->getCallbackLock().enter();
+    this->q = _q;
+    this->requestToUpdateProcessorSpec();
+    this->getCallbackLock().exit();
+    dlog("LowShelfFilter::setQ() successfully set the Q to " +
+         juce::String(_q));
+    return true;
+  }
+  dlog("LowShelfFilter::setQ() value doesn't change from " + juce::String(_q));
   return false;
 }
 

@@ -103,6 +103,8 @@ class AudioPluginProcessor final
       new juce::AudioParameterFloat(
           "vnf-filter-target-decay",
           "Velvet Noise Filter Target Decay in Decibel", -60, 0, -20);
+  AudioParameterFloat* lowShelfQParameter =
+      new AudioParameterFloat("low-shelf-Q", "Low Shelf Filter Q", 1, 10, 5);
   juce::AudioParameterFloat* gainParameter =
       new AudioParameterFloat("gain", "Gain", 0.0, 1.0, 0.2f);
 

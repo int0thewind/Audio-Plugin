@@ -6,15 +6,16 @@
 
 class LowShelfFilter final : public BaseAudioProcessor {
  public:
-  explicit LowShelfFilter(float, float);
+  explicit LowShelfFilter(float, float, float);
   const juce::String getName() const override;
   void prepareToPlay(double sampleRate,
                      int maximumExpectedSamplesPerBlock) override;
   void releaseResources() override;
   void processBlock(juce::AudioBuffer<float>& buffer,
                     juce::MidiBuffer& midiMessages) override;
-  bool setCutoffFreq(float cutoffFreq);
-  bool setAttenuationDecibel(float _attenuationDecibel);
+  bool setCutoffFreq(float);
+  bool setAttenuationDecibel(float);
+  bool setQ(float);
 
  private:
   void updateProcessorSpec() override;
@@ -26,6 +27,7 @@ class LowShelfFilter final : public BaseAudioProcessor {
   double savedSampleRate{};
   float cutoffFreq;
   float attenuationDecibel;
+  float q;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LowShelfFilter)
 };
