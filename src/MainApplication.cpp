@@ -45,7 +45,7 @@ class MainApplication : public juce::JUCEApplication {
 #if JUCE_IOS || JUCE_ANDROID
       this->setFullScreen(true);
 #else
-      this->setResizable(true, true);
+      this->setResizable(false, false);
       this->centreWithSize(this->getWidth(), this->getHeight());
 #endif
       this->setVisible(true);

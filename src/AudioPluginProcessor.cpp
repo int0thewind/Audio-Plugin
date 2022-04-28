@@ -209,12 +209,7 @@ void AudioPluginProcessor::processBlock(AudioBuffer<float> &buffer,
 bool AudioPluginProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor *AudioPluginProcessor::createEditor() {
-  juce::AudioProcessorEditor *editor =
-      new juce::GenericAudioProcessorEditor(*this);
-#if DEBUG
-  editor->setAlpha(0.5);
-#endif
-  return editor;
+  return new juce::GenericAudioProcessorEditor(*this);
 }
 
 void AudioPluginProcessor::getStateInformation(juce::MemoryBlock &destData) {

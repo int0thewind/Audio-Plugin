@@ -6,10 +6,12 @@
 
 class MainComponent final : public AudioAppComponent,
                             public Button::Listener,
-                            public Timer {
+                            public Timer,
+                            public ChangeListener {
  public:
+  void changeListenerCallback(ChangeBroadcaster *source) override;
   MainComponent();
-  ~MainComponent();
+  ~MainComponent() override;
 
   void timerCallback() override;
   void buttonClicked(juce::Button *button) override;
@@ -22,11 +24,12 @@ class MainComponent final : public AudioAppComponent,
   void resized() override;
 
   enum TransportState {
-    Stopped,
-    Starting,
-    Playing,
-    Paused,
-    Stopping,
+    Stopped,   // When no file is selected
+    Loading,   // When the audio is stopped
+    Starting,  // When the process is starting
+    Playing,   // When it is playing
+    Pausing,   // When the audio is pausing
+    Paused,    // When the audio is paused
   };
 
  private:
@@ -50,6 +53,9 @@ class MainComponent final : public AudioAppComponent,
   std::unique_ptr<TextButton> audioSettingButton =
       std::make_unique<TextButton>("Audio Setting");
 
+  std::unique_ptr<Label> transportStateLabel =
+      std::make_unique<Label>("Transport State Label");
+
   std::unique_ptr<Label> cpuUsageLabel =
       std::make_unique<Label>("CPU Usage Label");
   const String cpuUsagePrefix{"CPU Usage: "};
@@ -64,11 +70,13 @@ class MainComponent final : public AudioAppComponent,
   std::unique_ptr<AudioFormatReaderSource> readerSource;
   std::unique_ptr<AudioTransportSource> transportSource =
       std::make_unique<AudioTransportSource>();
-  Atomic<TransportState> state = Stopped;
+  TransportState state = Stopped;
 
-  void playPauseButtonUpdate();
+  std::unique_ptr<FileChooser> fileChooser = nullptr;
+
+  void updateTransportState(TransportState newState);
   void updateCpuUsageLabel();
-  void openAudioSettings();
+  void updateTransportStateLabel();
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
